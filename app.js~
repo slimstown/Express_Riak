@@ -1,0 +1,85 @@
+//var db = require('riak-js').getClient();
+//frameworks is a bucket
+
+/*Fetch object
+db.get('bucket_name', 'key_name', function(err, data){
+  if(err) console.log('db error')
+  console.log("Found: " + sys.inspect(data));
+});
+
+Store object
+db.save('bucket_name', 'node.js', {date: "2011", title: "This thing"});
+Delete
+db.remove('buck_name', 'node.js');
+Exists
+db.exists('frameworks', 'node.js');
+Get all
+db.getAll('frameworks');
+
+Get all with filter (uses mapreduce automatically)
+db.getAll('frameworks', { where: { lang: "javascript"}})
+
+db.count('frameworks')
+
+Add functionality with META
+db.save('bucket', 'key', data, META, cb)
+  META.contentType
+  META.clientId
+  META.links, usermeta
+  META.quorums (r,w,dw), returnBody - reads and returns stored data
+
+db.get('frameworks', 'node.js', function(err, data, meta){
+  meta.addLink({bucket:'vm', key:'v8', tag:'vm'});   add link
+  db.save('frameworks', 'node.js', data, meta);
+});
+*/
+// This computer IP: 10.0.1.22
+
+var express = require('express');
+var riak = require('riak-js');
+var clientSessions = require('node-client-sessions');
+
+//var db = riak.getClient({host: "localhost", port: "8098"});
+//var sessionStore = require("./session_store.js");
+
+var app = express();
+
+app.configure(function(){
+  //app.set('views', __dirname + '/views');
+  app.set('view engine', 'ejs');
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.static(__dirname + '/public'));
+  app.use(express.cookieParser());
+  app.use(clientSessions({
+    secret: '0GBlJZ9EKBt2Zbi2eewvztczCewBxXK' // set this to a long random string!
+  }));
+  /*app.use(express.session({
+    secret: 'bwoffidjwbd',
+    store: new sessionStore({
+      bucket: "syslog-web-sessions",
+      client: riak
+    })
+  }));*/
+});
+
+app.get('/', function(req, res){
+  if (req.session.username) {
+    res.send('Welcome ' + req.session.username + '! (<a href="/logout">logout</a>)');
+  } else {
+    res.send('You need to <a href="/login">login</a>.');
+  }
+});
+app.get('/login', function(req, res){
+  req.session.username = 'Joe';
+  console.log(req.session.username + ' logged in.');
+  res.redirect('/');
+});
+app.get('/logout', function(req, res){
+  req.session.reset();
+  res.redirect('/');
+});
+
+app.listen(3000, function(){
+  console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+});
