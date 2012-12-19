@@ -1,5 +1,26 @@
 $(document).ready(function(e){
-  console.log('yea');
+  getBuckets();
+  getBucket('users');
+  getKeys('users');
+  
+  function refreshAll(bucket){
+    getBuckets();
+    getBucket(bucket);
+    getKeys(bucket);
+  }
+  $(document).on('click', 'button.users', function(e){
+    refreshAll($(this).text());
+  });
+  $('#toggle_options').click(function(e){
+    if($('#left').hasClass('hidden')){
+      $('#left').removeClass('hidden');
+      $(this).text('Hide Options');
+    }
+    else{
+      $('#left').addClass('hidden');
+      $(this).text('Show Options');
+    }
+  });
   $('#register_form').submit(function(e){
     $.ajax({
       type: 'post',

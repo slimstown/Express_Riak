@@ -1,0 +1,26 @@
+#left, #right_1, #right_2{
+  float:left;
+}
+#left{
+  background: #E9DBCC;
+  width:20%;
+}
+#right_1{
+  background: #ADB5AD;
+  width:80%;
+}
+#right_2{
+  background: #A5C0C0;
+  width:80%;
+}
+.hidden{
+  display: none;
+}
+#toggle_options{
+  position: absolute;
+  top:0;
+  left:0;
+}
+.keys{
+  word-wrap: break-word;
+}

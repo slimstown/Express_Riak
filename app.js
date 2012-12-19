@@ -1,11 +1,9 @@
-// This computer IP: 10.0.1.22
-
 var express = require('express');
 var app = express();
 
 //db and session setup
 var RedisStore = require('connect-redis')(express);
-var db = require('riak-js').getClient({host: "localhost", port: "8098"});
+var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -16,9 +14,49 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(express.session({ secret: "keyboard cat", store: new RedisStore}));
 });
+/* AJAX API */
+app.post('/delete', function(req, res){
+  db.remove(req.body.bucket, req.body.key, function(err, data){
+    return res.json({
+      deleted: true
+    });
+  })
+});
+app.get('/getBuckets', function(req, res){
+  var result = {arr: []};
+  db.buckets(function(err, buckets, meta){
+    for(bucket in buckets){
+      if(buckets.hasOwnProperty(bucket)){
+        result.arr.push(buckets[bucket]);
+      }
+    }
+    return res.json(result);
+  });
+});
+app.post('/getBucket', function(req, res){
+  var result = {arr: []};
+  db.getAll(req.body.bucket , function(err, objArray, meta){
+    for(obj in objArray){
+      result.arr.push(objArray[obj]);
+    }
+    return res.json(result);
+  });
+});
+//return array of all keys given bucket
+app.post('/getKeys', function(req, res){
+  var result = {arr: []};
+  getKeys(req.body.bucket, function(keyArr){
+    for(key in keyArr){
+      result.arr.push(keyArr[key]);
+    }
+    return res.json(result);
+  });
+});
 
 app.get('/', function(req, res){
   var sess = req.session;
+  // get objects in selected bucket
+  
   res.render('main');
 });
 app.get('/login', function(req, res){
@@ -47,8 +85,6 @@ app.post('/login', function(req, res){
       return res.json({response: "Login Success", user: req.session.userName});
     });
   });
-  //res.redirect('/');
-  //res.json({'post login'});
 });
 app.get('/logout', function(req, res){
   req.session.destroy();
@@ -63,45 +99,16 @@ app.get('/register', function(req, res){
   '<input type="Submit" value="Submit"></form>';
   res.send(html);
 });
-
 app.post('/register', function(req, res){
   var count = null;
-  console.log(req.body);
-  //if count doesn't exist, add it starting at 0
-  db.exists('users', 'user_count', function(err, exists){
-    console.log('Exists: ' + exists);
-    if(!exists){
-      db.save('users', 'user_count', {user_count: 0}, {returnbody: true }, function(err, data){
-        console.log('user_count initialized at: ');
-        console.log(data);
-        next();
-      });
-    }
-    else
-      next();
+  var newUser = req.body;
+  console.log('email:' + newUser.userEmail);
+  console.log(newUser);
+  db.save('users', newUser.userEmail, newUser, {returnbody: true}, function(err, data){
+    console.log(data);
+    console.log('saved into DB');
+    return res.json(data);
   });
-  //If valid, increment count & continue
-  function next(){
-    //validate form data
-    
-    //increment count
-    db.get('users', 'user_count', function(err, data){
-      count = data.user_count + 1;
-      console.log('Count = ' + count);
-      db.save('users', 'user_count', {user_count: count}, function(err, data){
-        next_2();
-      });
-    });
-  }
-  //Finally, save user object using username as key
-  function next_2(){
-    db.save('users', req.body.userName, {name: req.body.userName, password: req.body.userPass },
-            {returnbody: true}, function(err, data){
-      console.log('User saved: ');
-      console.log(data);
-      return res.json(JSON.stringify(data));
-    });
-  }
 });
 
 app.get('/dbData', function(req,res){
@@ -136,6 +143,21 @@ app.get('/getKeys', function(req, res){
   }
   func.start();
 });
+app.get('/viewBucket', function(req, res){
+  var dataStr = '';
+  
+  db.getAll('users', function(err, objArray, meta){
+    res.send(dataStr);
+  })
+});
+app.get('/buckets', function(req, res){
+  db.buckets(function(err, buckets, meta){
+    console.log(buckets);
+    console.log(meta);
+    res.send('buckets');
+  });
+});
+
 app.get('/clearBucket', function(req, res){
   clearBucket('users');
   res.send('users bucket cleared');
@@ -155,8 +177,10 @@ function clearBucket(bucketName){
 }
 
 //get keys and return array into callback
+//key stream can return duplicates of key, so enforce unique set rules
 function getKeys(bucketName, callback){
   var keyArray = [];
+  var set = {};
   //get event listener which has 'keys' and 'end' event
   var event2 = db.keys(bucketName);
   var func = event2.on('keys', getKey).start();
@@ -165,11 +189,14 @@ function getKeys(bucketName, callback){
     var prop;
     for(prop in data){
       if(data.hasOwnProperty(prop)){
-        keyArray.push([data[prop]]);
+        set[data[prop]] = 1;
       }
     }
   }
   function end(data){
+    for(key in set){
+      keyArray.push(key);
+    }
     return callback(keyArray);
   }
 }
