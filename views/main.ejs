@@ -10,39 +10,60 @@
   <button id="toggle_options" >Show Options</button>
   <br />
   <div id="left" class="hidden">
-    <p>Curr User: <span id="curr_user"></span></p>
     <!-- Register -->
-    <b>Register</b>
-    <form id="register_form">
+    <b>Add
+      <select id="obj_select">
+        <option>user</option>
+        <option>gamepin</option>
+        <option>storepin</option>
+      </select>
+    </b>
+    <br />
+    <form id="add_user" class="visible">
       Email<input type="text" name="email"></input><br />
       Username<input type="text" name="name"></input><br />
       Password<input type="text" name="passHash"></input><br />
       fbConnect<input type="checkbox" name="fbConnect" value="true"></input><br />
+      <select name="favCat">
+        <option value="Casino">Casino</option>
+        <option value="Casual">Casual</option>
+        <option value="Shooter">Shooter</option>
+        <option value="Action">Action</option>
+        <option value="Simulation">Simulation</option>
+        <option value="Racing">Racing</option>
+        <option value="Puzzle">Puzzle</option>
+        <option value="Fighting">Fighting</option>
+        <option value="Social">Social</option>
+        <option value="Space">Space</option>
+        <option value="Horror">Horror</option>
+        <option value="Strategy">Strategy</option>
+      </select>
+      <input type="submit" value="Submit">
+    </form>
+    <form id="add_gamepin" class="hidden">
+      Poster ID<input type="text" name="poster_id"></input><br />
+      Category<input type="text" name="category"></input><br />
+      <input type="submit" value="Submit">
+    </form>
+    <form id="add_storepin" class="hidden">
+      Price<input type="text" name="price"></input><br />
+      Category<input type="text" name="category"></input><br />
       <input type="submit" value="Submit">
     </form>
     <br />
-    <!-- Login -->
-    <b>Login</b>
-    <form id="login_form">
-      Email<input type="text" name="userEmail"></input><br />
-      Password<input type="text" name="userPass"></input><br />
-      <input type="submit" value="Submit">
-    </form>
-    <!-- Delete 
-    <b>Delete</b>
-    <form id="delete_form">
-      Bucket<input type="text" name="userEmail"></input><br />
-      Key<input type="text" name="userPass"></input><br />
-      <input type="submit" value="Submit">
-    </form>-->
-    
+    <b>Bucket Options</b>
     <br />
-    <!-- Logout -->
-    <button id="logout_btn" value="Submit">Logout</button>
-    <p id="result"></p>
+    <button id="delete_all">Delete all</button>
+    <br />
   </div>
   <div id="right_1">
-    <div class="buckets">Buckets:<span></span></div>
+    <div class="buckets">Buckets:
+      <span>
+        <button class="users selected">users</button>
+        <button class="gamepins">gamepins</button>
+        <button class="storepins">storepins</button>
+      </span>
+    </div>
   </div>
   <div id="right_2">
     <div class="objects">Objects:<br/>

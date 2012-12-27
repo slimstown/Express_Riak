@@ -1,16 +1,17 @@
 $(document).ready(function(e){
-  getBuckets();
   getBucket('users');
   getKeys('users');
   
   function refreshAll(bucket){
-    getBuckets();
     getBucket(bucket);
     getKeys(bucket);
   }
-  $(document).on('click', 'button.users', function(e){
+  $(document).on('click', '.buckets button', function(e){
+    $('.selected').removeClass('selected');
+    $(this).addClass('selected');
     refreshAll($(this).text());
   });
+  //toggle options menu
   $('#toggle_options').click(function(e){
     if($('#left').hasClass('hidden')){
       $('#left').removeClass('hidden');
@@ -21,35 +22,75 @@ $(document).ready(function(e){
       $(this).text('Show Options');
     }
   });
-  $('#register_form').submit(function(e){
+  //add user
+  $('#add_user').submit(function(e){
     $.ajax({
       type: 'post',
       url: '/register',
       data: $(this).serialize(),
       success: function(data){
-        $('#result').text(data);
+        refreshAll($('.selected').text());
       }
     });
     return false;
   });
-  $('#login_form').submit(function(e){
+  //add gamepin
+  $('#add_gamepin').submit(function(e){
     $.ajax({
       type: 'post',
-      url: '/login',
+      url: '/postGamePin',
       data: $(this).serialize(),
       success: function(data){
-        if(data.user){
-          $('#result').text(data.response + data.user);
-          $('#curr_user').text(data.user);
-        }
-        else{
-          $('#result').text(data.response);
-        }
+        refreshAll($('.selected').text());
       }
     });
     return false;
   });
-  $('#logout_button').submit(function(e){
+  //add store
+  $('#add_storepin').submit(function(e){
+    $.ajax({
+      type: 'post',
+      url: '/postStorePin',
+      data: $(this).serialize(),
+      success: function(data){
+        refreshAll($('.selected').text());
+      }
+    });
     return false;
   });
+  //delete all objects in selected bucket
+  $('#delete_all').click(function(e){
+    var bucket = $('.selected').text();
+    $.ajax({
+      type: 'post',
+      url: '/delete_all',
+      data: 'bucket=' + bucket,
+      success: function(data){
+        refreshAll(bucket);
+        console.log('success');
+      }
+    });
+    return false;
+  });
+  //display correct form to add object
+  $('#obj_select').change(function(e){
+    $('.visible').removeClass('visibe').addClass('hidden');
+    var obj = $('#obj_select option').filter(':selected').text();
+    $('#add_'+obj).removeClass('hidden').addClass('visible');
+  });
+  //delete obj handler
+  $(document).on('click', '.delete', function(e){
+    var key = $(this).closest('tr').find('td:first-child a').text();
+    var bucket = $('.selected').text();
+    $.ajax({
+      type: 'post',
+      url: '/delete',
+      data: 'bucket=' + bucket + '&key=' + key,
+      success: function(data){
+        refreshAll(bucket);
+        console.log('success');
+      }
+    })
+  });
+  return false;
 });

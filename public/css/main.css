@@ -24,3 +24,12 @@
 .keys{
   word-wrap: break-word;
 }
+.selected{
+  border: 2px solid black;
+}
+.id{
+  /*font-weight: bold;*/
+}
+.hidden{
+  display:none;
+}

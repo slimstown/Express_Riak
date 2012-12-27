@@ -12,15 +12,23 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.static(__dirname + '/public'));
   app.use(express.cookieParser());
-  app.use(express.session({ secret: "keyboard cat", store: new RedisStore}));
 });
 /* AJAX API */
+//delete key & corresponding data
 app.post('/delete', function(req, res){
   db.remove(req.body.bucket, req.body.key, function(err, data){
     return res.json({
       deleted: true
     });
-  })
+  });
+});
+app.post('/delete_all', function(req, res){
+  getKeys(req.body.bucket, function(keyArr){
+    for(key in keyArr){
+      db.remove(req.body.bucket, keyArr[key]);
+    }
+    return res.json({ success: true });
+  });
 });
 app.get('/getBuckets', function(req, res){
   var result = {arr: []};
@@ -33,6 +41,7 @@ app.get('/getBuckets', function(req, res){
     return res.json(result);
   });
 });
+//get all objects in bucket
 app.post('/getBucket', function(req, res){
   var result = {arr: []};
   db.getAll(req.body.bucket , function(err, objArray, meta){
@@ -54,116 +63,50 @@ app.post('/getKeys', function(req, res){
 });
 
 app.get('/', function(req, res){
-  var sess = req.session;
-  // get objects in selected bucket
-  
   res.render('main');
 });
-app.get('/login', function(req, res){
-  var html = '';
-  html += '<form method="post" action="/login" >' +
-  'Name<input type="text" name="username"></input><br />' +
-  'Password<input type="text" name="password"></input><br />' +
-  '<input type="Submit" value="Submit"></form>';
-  res.send(html);
-});
-app.post('/login', function(req, res){
-  //check db for user and log in if exists
-  console.log(req.body);
-  db.exists('users', req.body.userName, function(err, exists){
-    if(!exists){
-      return res.json({response: "User not found"});
-    }
-    console.log(req.body.userName);
-    db.get('users', req.body.userName, function(err, user){
-      console.log(user);
-      if(req.body.userPass !== user.password){
-        return res.json({response: "Wrong Password"});
-      }
-      req.session.loggedIn = true;
-      req.session.userName = user.username;
-      return res.json({response: "Login Success", user: req.session.userName});
-    });
-  });
-});
-app.get('/logout', function(req, res){
-  req.session.destroy();
-  res.redirect('/');
-});
-//register user
-app.get('/register', function(req, res){
-  var html = '';
-  html += '<form method="post" action="/register" >' +
-  'Name<input type="text" name="username"></input><br />' +
-  'Password<input type="text" name="password"></input><br />' +
-  '<input type="Submit" value="Submit"></form>';
-  res.send(html);
-});
+
+//add User
 app.post('/register', function(req, res){
   var count = null;
   var newUser = req.body;
-  console.log('email:' + newUser.userEmail);
-  console.log(newUser);
-  db.save('users', newUser.userEmail, newUser, {returnbody: true}, function(err, data){
-    console.log(data);
-    console.log('saved into DB');
+  db.save('users', newUser.email, newUser, {returnbody: true}, function(err, data){
     return res.json(data);
   });
+  return res.json({success: true});
 });
-
-app.get('/dbData', function(req,res){
-  var html;
-  //db.getAll('users', function(err, data){
-  //  console.log(data);
-  //  html += data;
-    db.get('users', 'user_count', function(err, data){
-      html += data;
-      res.send(JSON.stringify(data));
-    });
-  //});
-});
-
-app.get('/clearUsers', function(req, res){
-  db.remove('users', '', function(err, data){
+//add gamepin
+app.post('/postGamePin', function(req, res){
+  var count = null;
+  var newObj = req.body;
+  console.log(req.body);
+  db.save('gamepins', '', newObj, {returnbody: true}, function(err, data, meta){
     console.log(data);
-    res.send(data);
+    console.log(data.id);
+    console.log(meta.key);
+    data.id = meta.key;
+    db.save('gamepins', data.id, data, {returnbody: true}, function(err, data){
+      console.log(data);
+      console.log('saved');
+      return res.json({success: true});
+    });
   });
 });
-app.get('/getKeys', function(req, res){
-  var event2 = db.keys('users');
-  var func = event2.on('keys', test
-  );
-  function test(data){
-    var prop;
-    for(prop in data){
-      if(data.hasOwnProperty(prop)){
-        console.log(data[prop]);
-      }
-    }
-  }
-  func.start();
-});
-app.get('/viewBucket', function(req, res){
-  var dataStr = '';
-  
-  db.getAll('users', function(err, objArray, meta){
-    res.send(dataStr);
-  })
-});
-app.get('/buckets', function(req, res){
-  db.buckets(function(err, buckets, meta){
-    console.log(buckets);
-    console.log(meta);
-    res.send('buckets');
+//add storepin
+app.post('/postStorePin', function(req, res){
+  var count = null;
+  var newObj = req.body;
+  db.save('storepins', '', newObj, {returnbody: true}, function(err, data, meta){
+    data.id = meta.key;
+    db.save('storepins', data.id, data, {returnbody: true}, function(err, data){
+      console.log(data);
+      console.log('saved');
+      return res.json({success: true});
+    });
   });
 });
 
-app.get('/clearBucket', function(req, res){
-  clearBucket('users');
-  res.send('users bucket cleared');
-});
-
-//clears bucket of all keys
+//clears bucket of all keyse
 function clearBucket(bucketName){
   getKeys(bucketName, function(keys){
     for(key in keys){
