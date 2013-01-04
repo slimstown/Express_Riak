@@ -18,7 +18,7 @@ getBuckets = function(){
   });
 }
 
-//Return all objects of given bucket
+//Refresh view of bucket
 getBucket = function(bucketName){
   var text = '';
   $.ajax({
@@ -26,30 +26,32 @@ getBucket = function(bucketName){
     url: '/getBucket',
     data: 'bucket='+bucketName,
     success: function(data){
-      if(data.arr){
-        for(bucket in data.arr){
+      if(data){
+        for(obj in data){
           if(bucketName === 'users'){
             text += '<tr>';
-            if(data.arr[bucket].email) text += '<td><a class="id" href="#">'+ data.arr[bucket].email +'</a></td>'; else text += '<td></td>';
-            if(data.arr[bucket].name) text += '<td>'+ data.arr[bucket].name +'</td>'; else text += '<td></td>';
-            if(data.arr[bucket].fbConnect) text += '<td>'+ data.arr[bucket].fbConnect +'</td>'; else text += '<td></td>';
-            if(data.arr[bucket].favCat) text += '<td>'+ data.arr[bucket].favCat +'</td>'; else text += '<td></td>';
+            //TODO FINISH testing / filling this in
+            if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
+            if(data[obj].data.name) text += '<td>'+ data[obj].data.name +'</td>'; else text += '<td></td>';
+            if(data[obj].data.fbConnect) text += '<td>'+ data[obj].data.fbConnect +'</td>'; else text += '<td></td>';
+            if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
             text += '</tr>';
           }
           else if(bucketName === 'gamepins'){
             text += '<tr>';
-            if(data.arr[bucket].id) text += '<td><a class="id" href="#">'+ data.arr[bucket].id +'</a></td>'; else text += '<td></td>';
-            if(data.arr[bucket].poster_id) text += '<td>'+ data.arr[bucket].poster_id +'</td>'; else text += '<td></td>';
-            if(data.arr[bucket].category) text += '<td>'+ data.arr[bucket].category +'</td>'; else text += '<td></td>';
+            if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
+            if(data[obj].data.poster_id) text += '<td>'+ data[obj].data.poster_id +'</td>'; else text += '<td></td>';
+            if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
+            if(data[obj].data.description) text += '<td>'+ data[obj].data.description +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
             text += '</tr>';
           }
           else if(bucketName === 'storepins'){
             text += '<tr>';
-            if(data.arr[bucket].id) text += '<td><a class="id" href="#">'+ data.arr[bucket].id +'</a></td>'; else text += '<td></td>';
-            if(data.arr[bucket].price) text += '<td>'+ data.arr[bucket].price +'</td>'; else text += '<td></td>';
-            if(data.arr[bucket].category) text += '<td>'+ data.arr[bucket].category +'</td>'; else text += '<td></td>';
+            if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
+            if(data[obj].data.price) text += '<td>'+ data[obj].data.price +'</td>'; else text += '<td></td>';
+            if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
             text += '</tr>';
           }
@@ -61,14 +63,13 @@ getBucket = function(bucketName){
           $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Options</th><tr>');
           break;
         case 'gamepins':
-          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Options</th><tr>');
+          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>Options</th><tr>');
           break;
         case 'storepins':
           $('#object_table').append('<tr><th>ID</th><th>Price</th><th>Category</th><th>Options</th><tr>');
           break;
       }
       $('#object_table').append(text);
-      
     },
     error: function(data){
       console.log('error');
@@ -113,5 +114,3 @@ deleteKey = function(bucketName, keyName){
   });
 }
 //Update an entry
-
-//

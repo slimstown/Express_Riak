@@ -1,9 +1,11 @@
 var express = require('express');
+var http = require('http');
 var app = express();
 
 //db and session setup
 var RedisStore = require('connect-redis')(express);
-var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
+//var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
+var riak = require('nodiak').getClient('http', '10.0.1.49', 8098);
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -13,22 +15,37 @@ app.configure(function(){
   app.use(express.static(__dirname + '/public'));
   app.use(express.cookieParser());
 });
+
+//Test db connection
+riak.ping(function(err, response){
+  console.log('Connection to riak db: ' + response);
+});
+
 /* AJAX API */
 //delete key & corresponding data
 app.post('/delete', function(req, res){
-  db.remove(req.body.bucket, req.body.key, function(err, data){
-    return res.json({
-      deleted: true
-    });
+  //riak.bucket(req.body.bucket).objects.delete()
+  riak.bucket(req.body.bucket).objects.get(req.body.key, function(err, obj){
+    next(obj);
   });
+  function next(obj){
+    riak.bucket(req.body.bucket).objects.delete(obj, function(err, obj){
+      console.log("delete success");
+      return res.json({ success: true });
+    });
+  }
 });
 app.post('/delete_all', function(req, res){
-  getKeys(req.body.bucket, function(keyArr){
-    for(key in keyArr){
-      db.remove(req.body.bucket, keyArr[key]);
-    }
-    return res.json({ success: true });
+  //get all objects in bucket
+  riak.bucket(req.body.bucket).objects.all(function(err, objs){
+    next(objs);
   });
+  function next(objs){
+    riak.bucket(req.body.bucket).objects.delete(objs, function(errs, objs){
+      console.log("All objects in " + req.body.bucket + " deleted!");
+      return res.json({ success: true });
+    });
+  }
 });
 app.get('/getBuckets', function(req, res){
   var result = {arr: []};
@@ -43,22 +60,8 @@ app.get('/getBuckets', function(req, res){
 });
 //get all objects in bucket
 app.post('/getBucket', function(req, res){
-  var result = {arr: []};
-  db.getAll(req.body.bucket , function(err, objArray, meta){
-    for(obj in objArray){
-      result.arr.push(objArray[obj]);
-    }
-    return res.json(result);
-  });
-});
-//return array of all keys given bucket
-app.post('/getKeys', function(req, res){
-  var result = {arr: []};
-  getKeys(req.body.bucket, function(keyArr){
-    for(key in keyArr){
-      result.arr.push(keyArr[key]);
-    }
-    return res.json(result);
+  riak.bucket(req.body.bucket).objects.all(function(err, r_objs){
+    return res.json(r_objs);
   });
 });
 
@@ -70,79 +73,120 @@ app.get('/', function(req, res){
 app.post('/register', function(req, res){
   var count = null;
   var newUser = req.body;
-  db.save('users', newUser.email, newUser, {returnbody: true}, function(err, data){
-    return res.json(data);
+  
+  var user = riak.bucket('users').objects.new(newUser.email, newUser);
+  user.addToIndex('name', newUser.name);
+  user.save(function(err, obj){
+    console.log("Registered!");
   });
   return res.json({success: true});
 });
 //add gamepin
 app.post('/postGamePin', function(req, res){
-  var count = null;
   var newObj = req.body;
-  console.log(req.body);
-  db.save('gamepins', '', newObj, {returnbody: true}, function(err, data, meta){
-    console.log(data);
-    console.log(data.id);
-    console.log(meta.key);
-    data.id = meta.key;
-    db.save('gamepins', data.id, data, {returnbody: true}, function(err, data){
-      console.log(data);
-      console.log('saved');
-      return res.json({success: true});
+  
+  // make a GET request to nodeflake to get an ID
+  var ID_obj;
+  var options = {
+    host: '10.0.1.29',
+    port: 1337,
+    path: '/',
+    method: 'GET',
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0" }
+  };
+  var R = http.request(options, function(response) {
+    var ID = "";
+    
+    // keep track of the data you receive
+    response.on('data', function(data) {
+      ID += data;
+    });
+    response.on('end', function() {
+      ID_obj = JSON.parse(ID);
+      next();
     });
   });
+  R.end();
+  
+  //save the object with generated ID
+  function next(){
+    var gamePin = riak.bucket('gamepins').objects.new(ID_obj.id, newObj);
+    gamePin.addToIndex('category', newObj.category);
+    gamePin.save(function(err, obj){
+      console.log("Gamepin saved");
+      return res.json({success: true});
+    });
+  }
 });
 //add storepin
 app.post('/postStorePin', function(req, res){
-  var count = null;
   var newObj = req.body;
-  db.save('storepins', '', newObj, {returnbody: true}, function(err, data, meta){
-    data.id = meta.key;
-    db.save('storepins', data.id, data, {returnbody: true}, function(err, data){
-      console.log(data);
-      console.log('saved');
+  
+  // make a GET request to nodeflake to get an ID
+  var ID_obj;
+  var options = {
+    host: '10.0.1.29',
+    port: 1337,
+    path: '/',
+    method: 'GET',
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0" }
+  };
+  var R = http.request(options, function(response) {
+    var ID = "";
+    
+    // keep track of the data you receive
+    response.on('data', function(data) {
+      ID += data;
+    });
+    response.on('end', function() {
+      ID_obj = JSON.parse(ID);
+      next();
+    });
+  });
+  R.end();
+  
+  //save the object with generated ID
+  function next(){
+    var storePin = riak.bucket('storepins').objects.new(ID_obj.id, newObj);
+    storePin.addToIndex('category', newObj.category);
+    storePin.addToIndex('price', newObj.price);
+    storePin.save(function(err, obj){
+      console.log("Storepin saved");
       return res.json({success: true});
     });
+  }
+});
+//query via category
+app.post('/categorySearch', function(req, res){
+  var objArray = [];
+  console.log(req.body);
+  riak.bucket(req.body.bucket).search.twoi(req.body.category, 'category', function(err, keys){
+    if(keys.length == 0) return res.json({ error: 'Not found' });
+    var len = keys.length;
+    var count = 0;
+    for(key in keys){
+      riak.bucket(req.body.bucket).objects.get(keys[key], function(err, obj){
+        objArray.push(obj);
+        count++;
+        if(count === len) next();
+      });
+    }
+    function next(){
+      return res.json({ objects: objArray });
+    }
   });
 });
 
-//clears bucket of all keyse
-function clearBucket(bucketName){
-  getKeys(bucketName, function(keys){
-    for(key in keys){
-      if(keys.hasOwnProperty(key)){
-        console.log(keys[key] + " removed from " + bucketName);
-        db.remove(bucketName, keys[key]);
-      }
-    }
-    return true;
+app.post('/textSearch', function(req, res){
+  var objArray = [];
+  console.log(req.body);
+  var query = {
+    q: 'description:' + '"' + req.body.text + '"'
+  }
+  riak.bucket(req.body.bucket).search.solr(query, function(err, response){
+    return res.json({ objects: response.response.docs });
   });
-}
-
-//get keys and return array into callback
-//key stream can return duplicates of key, so enforce unique set rules
-function getKeys(bucketName, callback){
-  var keyArray = [];
-  var set = {};
-  //get event listener which has 'keys' and 'end' event
-  var event2 = db.keys(bucketName);
-  var func = event2.on('keys', getKey).start();
-  var func2 = event2.on('end', end).start();
-  function getKey(data){
-    var prop;
-    for(prop in data){
-      if(data.hasOwnProperty(prop)){
-        set[data[prop]] = 1;
-      }
-    }
-  }
-  function end(data){
-    for(key in set){
-      keyArray.push(key);
-    }
-    return callback(keyArray);
-  }
-}
+});
 
 app.listen(3002, function(){
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
