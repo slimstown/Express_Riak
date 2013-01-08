@@ -1,0 +1,42 @@
+{"level":"info","message":"Happy Birthday!","timestamp":"2013-01-08T22:48:57.531Z"}
+{"level":"info","message":"Happy Birthday!","timestamp":"2013-01-08T22:53:58.234Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:03:34.442Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:03:34.444Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:05:08.997Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:05:08.999Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:06:07.388Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:06:07.390Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:06:27.462Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:06:27.463Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:08:39.309Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:08:39.311Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:08:57.813Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:08:57.815Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:15:30.330Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:15:30.332Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:16:43.289Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:16:43.291Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:16:52.553Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:16:52.555Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:17:15.507Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:17:15.508Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:19:54.838Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:19:54.840Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:20:16.491Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:20:16.492Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:22:36.746Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:22:36.748Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:27:56.312Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:27:56.315Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:28:36.387Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:28:36.389Z"}
+{"level":"info","message":"GET","timestamp":"2013-01-08T23:28:39.002Z"}
+{"level":"info","message":"/","timestamp":"2013-01-08T23:28:39.003Z"}
+{"level":"info","message":"POST","timestamp":"2013-01-08T23:28:39.116Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-01-08T23:28:39.116Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-01-08T23:29:32.458Z"}
+{"level":"info","message":"This also works","timestamp":"2013-01-08T23:29:32.459Z"}
+{"level":"info","message":"GET","timestamp":"2013-01-08T23:29:35.853Z"}
+{"level":"info","message":"/","timestamp":"2013-01-08T23:29:35.853Z"}
+{"level":"info","message":"POST","timestamp":"2013-01-08T23:29:35.946Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-01-08T23:29:35.946Z"}

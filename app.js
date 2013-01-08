@@ -1,11 +1,15 @@
 var express = require('express');
 var http = require('http');
+var winston = require('winston');
 var app = express();
 
 //db and session setup
 var RedisStore = require('connect-redis')(express);
 //var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
 var riak = require('nodiak').getClient('http', '10.0.1.49', 8100);
+
+winston.add(winston.transports.File, { filename: 'web.log'});
+winston.remove(winston.transports.Console);
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -14,12 +18,21 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.static(__dirname + '/public'));
   app.use(express.cookieParser());
+  //logging middleware
+  app.use(function(req, res, next){
+    winston.info(req.method)
+    winston.info(req.url);
+    next();
+  });
 });
 
 //Test db connection
 riak.ping(function(err, response){
   console.log('Connection to riak db: ' + response);
 });
+
+winston.log('info', 'Hello from Winston!');
+winston.info('This also works');
 
 /* AJAX API */
 //delete key & corresponding data
