@@ -5,7 +5,7 @@ var app = express();
 //db and session setup
 var RedisStore = require('connect-redis')(express);
 //var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
-var riak = require('nodiak').getClient('http', '10.0.1.49', 8098);
+var riak = require('nodiak').getClient('http', '10.0.1.49', 8091);
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
