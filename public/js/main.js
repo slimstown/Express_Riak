@@ -1,5 +1,5 @@
 $(document).ready(function(e){
-  getBucket('users');
+  //getBucket('users');
   
   //refresh view of all bucket objects
   function refreshAll(bucket){
@@ -92,6 +92,21 @@ $(document).ready(function(e){
     });
     return false;
   });
+  //edit user handler
+  $(document).on('click', '.edit', function(e){
+    var key = $(this).closest('tr').find('td:first-child a').text();
+    var bucket = $('.selected').text();
+    $.ajax({
+      type: 'post',
+      url: '/edit',
+      data: $('#add_user').serialize()+'&key='+key,
+      success: function(data){
+        refreshAll(bucket);
+        console.log('success');
+      }
+    });
+    return false;
+  });
   //search via category
   $(document).on('submit', '#query_form', function(e){
     var category = $('#query_form select[name=category] option').filter(':selected').val();
@@ -177,5 +192,13 @@ $(document).ready(function(e){
       }
     });
     return false;
+  });
+  //post image to Riak
+  $('#post_img').click(function(e){
+    $.ajax({
+      url: '/saveImg',
+      success: function(data){
+      }
+    });
   });
 });

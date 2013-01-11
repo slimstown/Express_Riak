@@ -1,15 +1,59 @@
 var express = require('express');
 var http = require('http');
 var winston = require('winston');
+var fs = require('fs');
+var random = require('secure_random');
+var mr = require('./mapreduce');
 var app = express();
 
-//db and session setup
+//setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
-//var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
-var riak = require('nodiak').getClient('http', '10.0.1.49', 8100);
+var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.49', 8100);
+
 
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
+
+/*random.getRandomInt(10, 15, function(err, value) {
+  console.log(value);
+});*/
+
+//fill db up with 20 users and 50 gamepins
+function populateDb(){
+  var userArray = [];
+  //12 categories
+  var categories = ['Casino', 'Casual', 'Shooter', 'Action',
+                    'Simulation', 'Racing', 'Puzzle', 'Fighting',
+                    'Social', 'Space', 'Horror', 'Strategy'];
+  var randNums = [];
+  //generate 20 rand numbers and store in array
+  for(var i = 0; i < 20; i++){
+    var count = 0;
+    random.getRandomInt(0, 11, function(err, value) {
+      randNums.push(value);
+      count++;
+      if(count === 20) next();
+    });
+  }
+  //create 20 users
+  function next(){
+    var emailStr, nameStr, fb, cat;
+    for(var i = 0; i < 20; i++){
+      emailStr = 'user' + i + '@gmail.com';
+      nameStr = 'user' + i;
+      fb = i < 10 ? true : false;
+      var user = riak.bucket('users').objects.new(emailStr,
+        { email: emailStr, name: nameStr, fbConnect:fb, favCat:categories[randNums[i]],
+        profileImg:'/images/profile/profile'+i+'.png' });
+      userArray.push(user);
+    }
+    console.log(userArray);
+    //save these into DB
+    riak.bucket('users').objects.save(userArray, function(errs, objs) {
+      console.log('saved');
+    });
+  }
+}
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -29,16 +73,47 @@ app.configure(function(){
 //Test db connection
 riak.ping(function(err, response){
   console.log('Connection to riak db: ' + response);
+  mr.listObjects('users');
+  //listObjects('gamepins');
+  //listKeys('users');
+  //listKeys('detail');
+  //deleteObjects('users');
+  //populateDb();
 });
 
 winston.log('info', 'Hello from Winston!');
 winston.info('This also works');
 
 /* AJAX API */
+//edit user
+app.post('/edit', function(req, res){
+  console.log(req.body.key);
+  //declare obj with key
+  var my_obj = riak.bucket('users').objects.new(req.body.key);
+  //fill its data in
+  my_obj.fetch(function(err, obj) {
+    console.log(obj);
+    next(obj);
+  });
+  function next(obj){
+    //update
+    if(req.body.email) obj.data.email = req.body.email;
+    if(req.body.name) obj.data.name = req.body.name;
+    if(req.body.passHash) obj.data.passHash = req.body.passHash;
+    if(req.body.fbConnect) obj.data.fbConnect = req.body.fbConnect;
+    if(req.body.favCat) obj.data.favCat = req.body.favCat;
+    //save
+    obj.save(function(err, obj){
+      console.log(obj);
+      return res.json({ success: true });
+    });
+  }
+});
 //delete key & corresponding data
 app.post('/delete', function(req, res){
   //riak.bucket(req.body.bucket).objects.delete()
   riak.bucket(req.body.bucket).objects.get(req.body.key, function(err, obj){
+    console.log(obj);
     next(obj);
   });
   function next(obj){
@@ -74,7 +149,11 @@ app.get('/getBuckets', function(req, res){
 //get all objects in bucket
 app.post('/getBucket', function(req, res){
   riak.bucket(req.body.bucket).objects.all(function(err, r_objs){
-    return res.json(r_objs);
+    for(obj in r_objs){
+      console.log(r_objs[obj].siblings);
+      console.log('_____________________');
+    }
+    //return res.json(r_objs);
   });
 });
 
@@ -187,6 +266,25 @@ app.post('/categorySearch', function(req, res){
     function next(){
       return res.json({ objects: objArray });
     }
+  });
+});
+
+app.get('/getImg', function(req, res){
+  console.log('getting img');
+});
+
+app.get('/saveImg', function(req, res){
+  console.log('uploading img');
+  fs.readFile('public/images/images (1).jpg', 'utf8', function(err, data){
+    if (err) {
+      return console.log(err);
+    }
+    console.log(data);
+    var img = riak.bucket('images').objects.new('i');
+    img.save(function(err, data){
+      if(err) return console.log(err);
+      return res.json({ success: true });
+    });
   });
 });
 
