@@ -26,6 +26,10 @@ getBucket = function(bucketName){
     url: '/getBucket',
     data: 'bucket='+bucketName,
     success: function(data){
+      if(!data){
+        console.log('Error: no data returned!');
+        return;
+      }
       if(data){
         for(obj in data){
           if(bucketName === 'users'){
@@ -41,7 +45,7 @@ getBucket = function(bucketName){
           else if(bucketName === 'gamepins'){
             text += '<tr>';
             if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
-            if(data[obj].data.poster_id) text += '<td>'+ data[obj].data.poster_id +'</td>'; else text += '<td></td>';
+            if(data[obj].data.posterId) text += '<td>'+ data[obj].data.posterId +'</td>'; else text += '<td></td>';
             if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
             if(data[obj].data.description) text += '<td>'+ data[obj].data.description +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';

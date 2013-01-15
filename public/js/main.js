@@ -131,7 +131,7 @@ $(document).ready(function(e){
             for(obj in data.objects){
               text += '<tr>'
               if(data.objects[obj].key) text += '<td><a class="id" href="#">'+ data.objects[obj].key +'</a></td>'; else text += '<td></td>';
-              if(data.objects[obj].data.poster_id) text += '<td>'+ data.objects[obj].data.poster_id +'</a></td>'; else text += '<td></td>';
+              if(data.objects[obj].data.posterId) text += '<td>'+ data.objects[obj].data.posterId +'</a></td>'; else text += '<td></td>';
               if(data.objects[obj].data.category) text += '<td>'+ data.objects[obj].data.category +'</a></td>'; else text += '<td></td>';
               if(data.objects[obj].data.description) text += '<td>'+ data.objects[obj].data.description +'</td>'; else text += '<td></td>';
               text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
@@ -179,7 +179,7 @@ $(document).ready(function(e){
         for(obj in data.objects){
           text += '<tr>'
           if(data.objects[obj].id) text += '<td><a class="id" href="#">'+ data.objects[obj].id +'</a></td>'; else text += '<td></td>';
-          if(data.objects[obj].fields.poster_id) text += '<td>'+ data.objects[obj].fields.poster_id +'</a></td>'; else text += '<td></td>';
+          if(data.objects[obj].fields.posterId) text += '<td>'+ data.objects[obj].fields.posterId +'</a></td>'; else text += '<td></td>';
           if(data.objects[obj].fields.category) text += '<td>'+ data.objects[obj].fields.category +'</a></td>'; else text += '<td></td>';
           if(data.objects[obj].fields.description) text += '<td>'+ data.objects[obj].fields.description +'</td>'; else text += '<td></td>';
           text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
