@@ -3,7 +3,7 @@ var app = express();
 
 //db and session setup
 var RedisStore = require('connect-redis')(express);
-var db = require('riak-js').getClient({host: "10.0.1.49", port: "8098"});
+var db = require('riak-js').getClient({host: "10.0.1.49", port: "8100"});
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -62,8 +62,19 @@ app.post('/getKeys', function(req, res){
   });
 });
 
+function dostuff(){
+  console.log('dostuff');
+  //for (var i = 0; i < 5; i++) {
+    db.get('tweets', '41399579391950848',function(error, object, meta) {
+      db.save('tweets', '41399579391950848', object);
+      console.log(meta.vclock);
+    });
+  //}
+}
+
 app.get('/', function(req, res){
   res.render('main');
+  dostuff();
 });
 
 //add User
