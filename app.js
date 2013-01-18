@@ -4,6 +4,7 @@ var winston = require('winston');
 var fs = require('fs');
 var random = require('secure_random');
 var mr = require('./mapreduce');
+var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
 //global vars
@@ -16,125 +17,280 @@ var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.49', 8100)
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
 
-/*random.getRandomInt(10, 15, function(err, value) {
-  console.log(value);
-});*/
+//IT ALL STARTS HERE
+riak.ping(function(err, response){
+  //mr.listKeys('gamepins');
+  //mr.listKeys('users');
+  
+  //mr.deleteObjects('gamepins');
+  //mr.deleteObjects('users');
+  
+  populateUsers();
+  //populatePins();
+  
+  //query('139');
+  //addPin();
+  //removeConflict();
+  
+  //removeSiblings();
+  //getSiblings();
+});
+
+function query(key){
+  //On 300, default auto-resolution returns latest sibling obj, with all siblings attached to
+  //a .siblings property
+  riak.bucket('gamepins').objects.get(key, function(err, objs){
+    if(objs.length !== 0){
+      console.log('object found');
+      console.log(objs);
+      //if siblings are present, write obj with vec clock to resolve
+      if(objs.siblings){
+        objs.save(function(err, obj){
+          console.log('object saved and conflicts resolved');
+          console.log(obj);
+        });
+      }
+      //if no siblings, then no need to write. We are done.
+    }
+    if(err){
+      //object not found, try again or troubleshoot.
+      if(err.status_code === 404){
+        console.log('object not found');
+      }
+    }
+  });
+}
+
+function addPin(){
+  //read object
+  var my_pin = riak.bucket('users').objects.new('888');
+  my_pin.fetch(function(err, obj){
+    console.log(obj);
+    //Update it if exists.  Create it if empty.  (Its the same thing)
+    obj.data = {content: "Second"};
+    //overwrite previous version by writing with vector clock
+    obj.save(function(err, saved){
+      console.log(saved);
+    })
+  });
+
+  /*my_pin.save(function(err, obj) {
+      console.log(obj);
+  });*/
+}
+
+function removeConflict(){
+  riak.bucket('gamepins').objects.get(101, function(err, objs){
+    console.log(objs);
+  });
+  /*pin0.fetch(function(err, obj) {
+    console.log(obj);
+  });*/
+}
 
 //12 categories
 var categories = ['Casino', 'Casual', 'Shooter', 'Action',
                   'Simulation', 'Racing', 'Puzzle', 'Fighting',
                   'Social', 'Space', 'Horror', 'Strategy'];
-//20 users
+//40 users
 var userEmails = [];
-for(var i = 0; i < 20; i++){
+for(var i = 0; i < 40; i++){
   userEmails.push('user'+i+'@gmail.com');
 }
 
-
-//Populate db with 20 users
+//Populate db with 40 users
 function populateUsers(){
-  var userArray = [];
   var randNums = [];
-  //generate 20 rand numbers and store in array
-  for(var i = 0; i < 20; i++){
+  var users = [];
+  var userKeys = [];
+  var c = -1;
+  //generate 40 rand numbers and store in array
+  for(var i = 0; i < 40; i++){
     var count = 0;
     random.getRandomInt(0, 11, function(err, value) {
       randNums.push(value);
       count++;
-      if(count === 20) next();
+      if(count === 40) next();
     });
   }
-  //create 20 users
+  //create 40 users
   function next(){
     var emailStr, nameStr, fb, cat;
-    for(var i = 0; i < 20; i++){
+    for(var i = 0; i < 40; i++){
       emailStr = userEmails[i];
       nameStr = 'user' + i;
       fb = i < 10 ? true : false;
-      var user = riak.bucket('users').objects.new(emailStr,
-        { email: emailStr, name: nameStr, fbConnect:fb, favCat:categories[randNums[i]],
-        profileImg:'/images/profile/profile'+i+'.png' });
-      userArray.push(user);
+      var hash = bcrypt.hashSync(nameStr);
+      userKeys.push(emailStr);
+      users.push({email: userEmails[i], passHash:hash, name:nameStr, fbConnect:fb, favCat:categories[randNums[i]],
+       profileImg:'/images/profile/profile'+i+'.png' });
     }
-    console.log(userArray);
-    //save these into DB
-    riak.bucket('users').objects.save(userArray, function(errs, objs) {
-      console.log('saved');
+    
+    riak.bucket('users').objects.get(userKeys).stream(function(results) {
+      results.on('data', function(obj) {
+        c++;
+        console.log(obj.key);
+        console.log('found');
+        newObj = riak.bucket('users').objects.new(obj.key, users[c]);
+        newObj.metadata.vclock = obj.metadata.vclock;
+        newObj.save(function(err, saved){
+          console.log('user overwritten');
+        });
+      });
+      results.on('error', function(err){
+        c++;
+        //if not found, create new obj.
+        if(err.status_code === 404){
+          console.log('not found');
+          console.log(err.data);
+          newObj = riak.bucket('users').objects.new(err.data, users[c]);
+          newObj.save(function(err, saved){
+            console.log('new user saved!');
+          });
+        }
+      });
+      results.on('end', function(){
+        console.log('done');
+      });
     });
+    
+    //save these into DB
+    /*riak.bucket('users').objects.save(userArray).stream(function(results) {
+      results.on('data', function(obj) {
+        console.log(i);
+        i++;
+      });
+  
+      results.on('error', function(err) {
+        console.warn(err);
+      });
+  
+      results.on('end', function() {
+        // do something else after we're all done getting the objects.
+      });
+    });*/
   }
 }
-//Populate db with 40 gamepins
+
+var test_resolve = function(siblings){
+  for(var sib in siblings){
+    console.log(siblings[sib])
+  }
+}
+
+//Populate db with 80 gamepins
 function populatePins(){
   var randCategories = [];
   var randPosters = [];
   var pinArray = [];
-  //generate 40 random categories (12 categories) and 40 unique descriptions
-  for(var i = 0; i < 40; i++){
+  var pinKeys = [];
+  var c = -1;
+  //generate 80 random categories (12 categories) and 80 unique descriptions
+  for(var i = 0; i < 80; i++){
     var count = 0;
     random.getRandomInt(0, 11, function(err, value) {
       randCategories.push(categories[value]);
       count++;
-      if(count === 40) next();
+      if(count === 80) next();
     });
   }
   function next(){
-    //generate 40 random posters (20 users)
-    for(var i = 0; i < 40; i++){
+    //generate 80 random posters (40 users)
+    for(var i = 0; i < 80; i++){
       var count = 0;
+      var id = 101+i;
+      pinKeys.push(id);
       random.getRandomInt(0, 19, function(err, value) {
         randPosters.push(userEmails[value]);
         count++;
-        if(count === 40) next2();
+        if(count === 80) next2();
       });
     }
   }
   function next2(){
-    console.log(randCategories);
-    console.log(randPosters);
-    
-    //Use i as ID for now (we should be using nodeflake, but the end result is the same)
-    for(var i = 0; i < 40; i++){
-      var pin = riak.bucket('gamepins').objects.new(101+i,
-        { posterId: randPosters[i], category: randCategories[i], description: 'This is a pin '+i, returnAll: 'y'});
-      pin.setMeta('content-type', 'application/json');
-      pin.addToIndex('category', randCategories[i]);
-      pinArray.push(pin);
-    }
-    //save these pins into DB
-    riak.bucket('gamepins').objects.save(pinArray, function(errs, objs) {
-      console.log(objs);
-      console.log('saved');
+    //add the pin ID to the user
+    /*riak.bucket('users').objects.get(randPosters[i], function(err, usr){
+      usr.data.posts = [];
+      usr.data.posts.push(id);
+      usr.save(function(err, obj){
+        console.log(obj);
+      });
+    });*/
+    //get all these gamepin keys to see if the obj exists
+    riak.bucket('gamepins').objects.get(pinKeys).stream(function(results) {
+      // on data returns each object. Confirmed.
+      results.on('data', function(obj) {
+        c++;
+        console.log('found');
+        //Overwrite old object.
+        newObj = riak.bucket('gamepins').objects.new(obj.key,
+          { posterId: randPosters[c], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
+        //Must set vclock to match old object to overwrite it.
+        newObj.metadata.vclock = obj.metadata.vclock;
+        newObj.addToIndex('category', randCategories[c]);
+        newObj.save(function(err, saved){
+          console.log('gamepin overwritten:');
+          console.log(saved);
+        });
+      });
+  
+      results.on('error', function(err) {
+        c++;
+        //if not found, create new obj.
+        if(err.status_code === 404){
+          console.log('not found');
+          newObj = riak.bucket('gamepins').objects.new(err.data,
+            { posterId: randPosters[c], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
+          pin.addToIndex('category', randCategories[c]);
+          newObj.save(function(err, saved){
+            console.log('new gamepin created:');
+            console.log(saved);
+          });
+        }
+        //console.warn(err);
+      });
+      results.on('end', function() {
+        console.log('done');
+      });
     });
+    //add pin ID to user's post list
   }
 }
 
 function removeSiblings(){
   riak.bucket('gamepins').objects.all(function(err, objs){
     for(obj in objs){
-      //objs[obj].sibling = null;
-      console.log(objs[obj].sibling);
-      /*objs[obj].save(function(err, obj){
-        console.log("Registered!");
-      });*/
+      //objs[obj].siblings = null;
+      console.log(objs[obj]);
+      //objs[obj].save(function(err, obj){
+      //  console.log("Registered!");
+      //});
     }
   });
 }
 
-//Test db connection
-riak.ping(function(err, response){
-  console.log('Connection to riak db: ' + response);
-  //mr.listKeys('gamepins');
-  //mr.deleteObjects('gamepins');
-  //mr.deleteObjects('users');
-  //populateUsers();
-  //populatePins();
-  //mr.deleteObjects('gamepins');
-  //var users = riak.bucket('gamepins');
-  //users.getProps(function(err, props){
-  //  console.log(users.props);
-  //});
-  //removeSiblings();
-});
+function getSiblings(){
+  var deletes = [];
+  riak.bucket('gamepins').objects.all(function(err, objs){
+    for(var obj in objs){
+      console.log(objs[obj].siblings);
+    }
+  });
+}
+
+function configure(){
+  var users = riak.bucket('users');
+  var pins = riak.bucket('gamepins');
+  users.props.allow_mult = false;
+  users.props.last_write_wins = true;
+  users.saveProps(true, function(err, props) {
+  });
+  pins.props.allow_mult = false;
+  pins.props.last_write_wins = true;
+  pins.saveProps(true, function(err, props) {
+  });
+  console.log('done');
+}
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -145,7 +301,7 @@ app.configure(function(){
   app.use(express.cookieParser());
   //logging middleware
   app.use(function(req, res, next){
-    winston.info(req.method)
+    winston.info(req.method);
     winston.info(req.url);
     next();
   });
@@ -216,15 +372,41 @@ app.get('/getBuckets', function(req, res){
     return res.json(result);
   });
 });
-//get all objects in bucket
+//get all objects in bucket, resolving conflicts along the way
 app.post('/getBucket', function(req, res){
+  var objList = [];
   riak.bucket(req.body.bucket).objects.all(function(err, r_objs){
-    /*for(obj in r_objs){
-      console.log(r_objs[obj].siblings);
-      console.log('_____________________');
-    }*/
-    return res.json(r_objs);
+    if(r_objs.length !== 0){
+      for(var obj in r_objs){
+        //if siblings are present, write obj with vec clock to resolve
+        if(r_objs[obj].siblings){
+          r_objs[obj].save(function(err, saved){
+            console.log('overwrite -> conflicts resolved');
+            objList.push(saved);
+          });
+        }
+        //if no siblings, push object to result list
+        else{
+          objList.push(r_objs[obj]);
+        }
+        //when our result list is filled, return it
+        if(objList.length === r_objs.length) next();
+      }
+    }
+    else{
+      console.log('no objects found');
+      return res.json({error: 'no objects found'});
+    }
+    if(err){
+      console.log('Error: ');
+      console.log(err);
+      return res.json(err);
+    }
   });
+  function next(){
+    console.log('got all bucket objects');
+    return res.json(objList);
+  }
 });
 
 app.get('/', function(req, res){
@@ -237,6 +419,7 @@ app.post('/register', function(req, res){
   var newUser = req.body;
   
   var user = riak.bucket('users').objects.new(newUser.email, newUser);
+  
   user.addToIndex('name', newUser.name);
   user.save(function(err, obj){
     console.log("Registered!");
@@ -254,7 +437,7 @@ app.post('/postGamePin', function(req, res){
     port: 1337,
     path: '/',
     method: 'GET',
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0" }
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/40100101 Firefox/17.0" }
   };
   var R = http.request(options, function(response) {
     var ID = "";
@@ -291,7 +474,7 @@ app.post('/postStorePin', function(req, res){
     port: 1337,
     path: '/',
     method: 'GET',
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20100101 Firefox/17.0" }
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/40100101 Firefox/17.0" }
   };
   var R = http.request(options, function(response) {
     var ID = "";

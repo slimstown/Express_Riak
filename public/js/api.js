@@ -26,8 +26,8 @@ getBucket = function(bucketName){
     url: '/getBucket',
     data: 'bucket='+bucketName,
     success: function(data){
-      if(!data){
-        console.log('Error: no data returned!');
+      if(data.error){
+        console.log(data.error.message);
         return;
       }
       if(data){
