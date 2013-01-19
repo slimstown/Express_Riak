@@ -1,6 +1,6 @@
 /* Here lies javascript routines that call useful mapreduce functions */
 
-var app = require('./app.js')
+var app = require('./app.js');
 
 exports.listObjects = function(bucket, callback){
   app.riak.mapred.inputs(bucket)
@@ -18,7 +18,7 @@ exports.listObjects = function(bucket, callback){
   );
 }
 
-exports.listKeys = function(bucket){
+exports.listKeys = function(bucket, callback){
   console.log('List all objects in this bucket!');
   app.riak.mapred.inputs(bucket)
     .map({
@@ -27,7 +27,9 @@ exports.listKeys = function(bucket){
         function: 'map_key' })
 
     .execute(function(err, results) {
-        if(!err) console.log(results);
+        if(!err){
+          callback(results);
+        }
     }
   );
 }

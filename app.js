@@ -4,6 +4,7 @@ var winston = require('winston');
 var fs = require('fs');
 var random = require('secure_random');
 var mr = require('./mapreduce');
+var util = require('./utility');
 var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
@@ -17,17 +18,47 @@ var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.49', 8100)
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
 
+merge_resolve = function(siblings) {
+  function siblingLastModifiedSort(a, b) {
+    if(!a.metadata.last_modified || new Date(a.metadata.last_modified) < new Date(b.metadata.last_modified)) {
+      return 1;
+    }
+    else {
+      return -1;
+    }
+  }
+  siblings.sort(siblingLastModifiedSort);
+  //merge posts together
+  console.log('mergeresolve!');
+  for(var i = 1; i < siblings.length; i++){
+    siblings[0].data.posts.concat(siblings[i].data.posts);
+  }
+  return siblings[0];
+}
+
 //IT ALL STARTS HERE
 riak.ping(function(err, response){
+  //util.generateUsers(0, 10);
+  //util.generatePins(5);
+  //util.link('user1@gmail.com', 101);
+  //util.link('user1@gmail.com', 102);
+  //util.clearLinks('user1@gmail.com');
+  
+  //util.readAndResolve('user1@gmail.com');
+  
+  //customResolve();
+  //mr.listKeys('users', function(results){
+  //  console.log(results);
+  //});
   //mr.listKeys('gamepins');
-  //mr.listKeys('users');
   
   //mr.deleteObjects('gamepins');
   //mr.deleteObjects('users');
   
-  populateUsers();
+  //populateUsers();
   //populatePins();
-  
+  //link();
+  //unlink();
   //query('139');
   //addPin();
   //removeConflict();
@@ -35,6 +66,50 @@ riak.ping(function(err, response){
   //removeSiblings();
   //getSiblings();
 });
+
+function unlink(){
+  riak.bucket('users').objects.all(function(err, objs){
+    for(obj in objs){
+      console.log(objs[obj].key);
+      objs[obj].data.posts = [];
+      objs[obj].save(function(err, saved){
+        console.log(saved.data.posts);
+      });
+    }
+  });
+}
+
+//fill each user's posts array with relevant posts
+function link(){
+  var gpArr = [];
+  var arr = [];
+  c = '101';
+  for(var i = 0; i < 80; i++){
+    arr.push(c);
+    c++;
+  }
+  //console.log(arr);
+  riak.bucket('gamepins').objects.get(arr, function(err, gamepin){
+    for(gp in gamepin){
+      console.log(gamepin[gp].key);
+      //console.log(gamepin[gp].data.posterId);*/
+      gpArr.push(gamepin[gp].data.posterId);
+      linkIt(gamepin[gp].data.posterId, gamepin[gp].key);
+    }
+  });
+  function linkIt(userId, pinId){
+    riak.bucket('users').objects.get(userId, function(err, usr){
+      console.log('link ' + userId + ' with ' + pinId + ' via: ');
+      //console.log(usr.data.posts);
+      //console.log(usr.siblings);
+      //console.log(usr.metadata);
+      usr.data.posts.push(pinId);
+      usr.save(function(err, saved){
+        console.log(saved.data.posts);
+      });
+    });
+  }
+}
 
 function query(key){
   //On 300, default auto-resolution returns latest sibling obj, with all siblings attached to
@@ -123,7 +198,7 @@ function populateUsers(){
       var hash = bcrypt.hashSync(nameStr);
       userKeys.push(emailStr);
       users.push({email: userEmails[i], passHash:hash, name:nameStr, fbConnect:fb, favCat:categories[randNums[i]],
-       profileImg:'/images/profile/profile'+i+'.png' });
+       profileImg:'/images/profile/profile'+i+'.png', posts:[] });
     }
     
     riak.bucket('users').objects.get(userKeys).stream(function(results) {
@@ -131,7 +206,15 @@ function populateUsers(){
         c++;
         console.log(obj.key);
         console.log('found');
-        newObj = riak.bucket('users').objects.new(obj.key, users[c]);
+        
+        s1 = obj.key.indexOf('r') + 1;
+        s2 = obj.key.indexOf('@');
+        s = obj.key.substring(s1, s2);
+        key = s.parseInt(s);
+        console.log(key + ' !!! ');
+        console.log(obj.key);
+        
+        newObj = riak.bucket('users').objects.new(obj.key, users[key]);
         newObj.metadata.vclock = obj.metadata.vclock;
         newObj.save(function(err, saved){
           console.log('user overwritten');
@@ -142,8 +225,14 @@ function populateUsers(){
         //if not found, create new obj.
         if(err.status_code === 404){
           console.log('not found');
+          //console.log(err.data);
           console.log(err.data);
-          newObj = riak.bucket('users').objects.new(err.data, users[c]);
+          s1 = err.data.indexOf('r') + 1;
+          s2 = err.data.indexOf('@');
+          s = err.data.substring(s1, s2);
+          key = parseInt(s, 10);
+          
+          newObj = riak.bucket('users').objects.new(err.data, users[key]);
           newObj.save(function(err, saved){
             console.log('new user saved!');
           });
@@ -153,22 +242,6 @@ function populateUsers(){
         console.log('done');
       });
     });
-    
-    //save these into DB
-    /*riak.bucket('users').objects.save(userArray).stream(function(results) {
-      results.on('data', function(obj) {
-        console.log(i);
-        i++;
-      });
-  
-      results.on('error', function(err) {
-        console.warn(err);
-      });
-  
-      results.on('end', function() {
-        // do something else after we're all done getting the objects.
-      });
-    });*/
   }
 }
 
@@ -200,31 +273,26 @@ function populatePins(){
       var count = 0;
       var id = 101+i;
       pinKeys.push(id);
-      random.getRandomInt(0, 19, function(err, value) {
+      random.getRandomInt(0, 39, function(err, value) {
         randPosters.push(userEmails[value]);
         count++;
         if(count === 80) next2();
       });
     }
+    
   }
   function next2(){
     //add the pin ID to the user
-    /*riak.bucket('users').objects.get(randPosters[i], function(err, usr){
-      usr.data.posts = [];
-      usr.data.posts.push(id);
-      usr.save(function(err, obj){
-        console.log(obj);
-      });
-    });*/
     //get all these gamepin keys to see if the obj exists
     riak.bucket('gamepins').objects.get(pinKeys).stream(function(results) {
       // on data returns each object. Confirmed.
       results.on('data', function(obj) {
-        c++;
         console.log('found');
         //Overwrite old object.
+        c = parseInt(obj.key, 10) - 101;
+        
         newObj = riak.bucket('gamepins').objects.new(obj.key,
-          { posterId: randPosters[c], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
+          { posterId: userEmails[c%30], category: randCategories[c], description:'This is a pin '+c, returnAll:'y'});
         //Must set vclock to match old object to overwrite it.
         newObj.metadata.vclock = obj.metadata.vclock;
         newObj.addToIndex('category', randCategories[c]);
@@ -232,16 +300,21 @@ function populatePins(){
           console.log('gamepin overwritten:');
           console.log(saved);
         });
+        linkUsr = riak.bucket('users').objects.new('user'+c+'@gmail.com', function(err, usr){
+          usr.posts.push(obj.key);
+          usr.save(function(err, saved){
+          });
+        });
       });
   
       results.on('error', function(err) {
-        c++;
         //if not found, create new obj.
         if(err.status_code === 404){
           console.log('not found');
+          c = parseInt(err.data, 10) - 100;
           newObj = riak.bucket('gamepins').objects.new(err.data,
-            { posterId: randPosters[c], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
-          pin.addToIndex('category', randCategories[c]);
+            { posterId: userEmails[c%30], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
+          newObj.addToIndex('category', randCategories[c]);
           newObj.save(function(err, saved){
             console.log('new gamepin created:');
             console.log(saved);
@@ -375,37 +448,45 @@ app.get('/getBuckets', function(req, res){
 //get all objects in bucket, resolving conflicts along the way
 app.post('/getBucket', function(req, res){
   var objList = [];
-  riak.bucket(req.body.bucket).objects.all(function(err, r_objs){
-    if(r_objs.length !== 0){
-      for(var obj in r_objs){
-        //if siblings are present, write obj with vec clock to resolve
-        if(r_objs[obj].siblings){
-          r_objs[obj].save(function(err, saved){
-            console.log('overwrite -> conflicts resolved');
+  var keys = [];
+  mr.listKeys(req.body.bucket, function(results){
+    keys = results.data;
+    if(keys.length > 0) next();
+    else{
+      console.log('No '+ req.body.bucket +' in db. Unable to generate pins without owners.');
+      return 0;
+    }
+  });
+  //READ AND RESOLVE!!!
+  function next(){
+    riak.bucket(req.body.bucket).objects.get(keys, util.stupid_resolve, function(err, objs){
+      if(err){
+        console.log('Error:');
+        console.log(err);
+        return res.json({error: 'object is missing or other error. Bad news :( '});
+      }
+      //if nodiak gives us a single object, convert that into an array with 1 element
+      if(objs && Object.prototype.toString.call( objs ) === '[object Object]')
+        objs = [objs];
+      //loop through all found objects and overwrite them
+      for(o in objs){
+        //if siblings, write to resolve conflict
+        if(objs[o].siblings){
+          objs[o].save(function(err, saved){
+            console.log('conflict resolved');
             objList.push(saved);
           });
         }
-        //if no siblings, push object to result list
         else{
-          objList.push(r_objs[obj]);
+          objList.push(objs[o]);
         }
-        //when our result list is filled, return it
-        if(objList.length === r_objs.length) next();
+        if(objList.length === objs.length) next2();
       }
+    });
+    function next2(){
+      console.log('got all '+req.body.bucket+' objects');
+      return res.json(objList);
     }
-    else{
-      console.log('no objects found');
-      return res.json({error: 'no objects found'});
-    }
-    if(err){
-      console.log('Error: ');
-      console.log(err);
-      return res.json(err);
-    }
-  });
-  function next(){
-    console.log('got all bucket objects');
-    return res.json(objList);
   }
 });
 
