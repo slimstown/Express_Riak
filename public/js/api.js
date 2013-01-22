@@ -39,6 +39,8 @@ getBucket = function(bucketName){
             if(data[obj].data.name) text += '<td>'+ data[obj].data.name +'</td>'; else text += '<td></td>';
             if(data[obj].data.fbConnect) text += '<td>'+ data[obj].data.fbConnect +'</td>'; else text += '<td></td>';
             if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
+            if(data[obj].data.posts.length > 0) text += '<td>'+ data[obj].data.posts + ' ('+ data[obj].data.posts.length+ ')' +'</td>'; else text += '<td></td>';
+            if(data[obj].data.likes.length > 0) text += '<td>'+ data[obj].data.likes + ' ('+ data[obj].data.likes.length+ ')' +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
             text += '</tr>';
           }
@@ -64,7 +66,7 @@ getBucket = function(bucketName){
       $('#object_table').empty();
       switch(bucketName){
         case 'users':
-          $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Options</th><tr>');
+          $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th><th>Options</th><tr>');
           break;
         case 'gamepins':
           $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>Options</th><tr>');

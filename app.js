@@ -39,15 +39,47 @@ merge_resolve = function(siblings) {
 //IT ALL STARTS HERE
 riak.ping(function(err, response){
   //util.generateUsers(0, 10);
-  //util.generatePins(5);
+  //util.generatePins(0, 20);
   //util.link('user1@gmail.com', 101);
   //util.link('user1@gmail.com', 102);
   //util.clearLinks('user1@gmail.com');
-  
+  //util.clearConflicts();
   //util.readAndResolve('user1@gmail.com');
+  //util.like('user1@gmail.com', 109);
+  
+  /******TODO*****/
+  //add dateJoined & datePosted
+  //fill in other relevant fields
+  //util.unlike()
+  //util.follow('user1@gmail.com', 'user3@gmaill.com') //follow is a 1 way procss
+  //util.friend('user1@gmail.com', 'user2@gmail.com') //friend sends request. Upon confirmation, 2 way friendship and followership is achieved
+  //util.unfollow(user1, user2);
+  //util.defriend();
+  //util.postPin();
+  //util.rePin();
+  //util.editPin();
+  //util.deletePin();
+  //util.makeGroup();
+  //util.editGroup();
+  //util.deleteGroup();
+  //util.addToGroup();
+  //util.editSettings();
+  //util.tagFriend();
+  
+  /***MORE COMPLEX***/
+  //util.friendRequest();
+  //util.message();
+  //util.createConversation();
+  //util.totalUsers();
+  //util.totalPins();
+  //util.addEvent();
+  
+  /*** HOLD OFF FOR NOW ****/
+  //util.addXP();
+  //util.addBadge();
   
   //customResolve();
-  //mr.listKeys('users', function(results){
+  //mr.listKeys('gamepins', function(results){
   //  console.log(results);
   //});
   //mr.listKeys('gamepins');
@@ -77,38 +109,6 @@ function unlink(){
       });
     }
   });
-}
-
-//fill each user's posts array with relevant posts
-function link(){
-  var gpArr = [];
-  var arr = [];
-  c = '101';
-  for(var i = 0; i < 80; i++){
-    arr.push(c);
-    c++;
-  }
-  //console.log(arr);
-  riak.bucket('gamepins').objects.get(arr, function(err, gamepin){
-    for(gp in gamepin){
-      console.log(gamepin[gp].key);
-      //console.log(gamepin[gp].data.posterId);*/
-      gpArr.push(gamepin[gp].data.posterId);
-      linkIt(gamepin[gp].data.posterId, gamepin[gp].key);
-    }
-  });
-  function linkIt(userId, pinId){
-    riak.bucket('users').objects.get(userId, function(err, usr){
-      console.log('link ' + userId + ' with ' + pinId + ' via: ');
-      //console.log(usr.data.posts);
-      //console.log(usr.siblings);
-      //console.log(usr.metadata);
-      usr.data.posts.push(pinId);
-      usr.save(function(err, saved){
-        console.log(saved.data.posts);
-      });
-    });
-  }
 }
 
 function query(key){
@@ -147,207 +147,6 @@ function addPin(){
     obj.save(function(err, saved){
       console.log(saved);
     })
-  });
-
-  /*my_pin.save(function(err, obj) {
-      console.log(obj);
-  });*/
-}
-
-function removeConflict(){
-  riak.bucket('gamepins').objects.get(101, function(err, objs){
-    console.log(objs);
-  });
-  /*pin0.fetch(function(err, obj) {
-    console.log(obj);
-  });*/
-}
-
-//12 categories
-var categories = ['Casino', 'Casual', 'Shooter', 'Action',
-                  'Simulation', 'Racing', 'Puzzle', 'Fighting',
-                  'Social', 'Space', 'Horror', 'Strategy'];
-//40 users
-var userEmails = [];
-for(var i = 0; i < 40; i++){
-  userEmails.push('user'+i+'@gmail.com');
-}
-
-//Populate db with 40 users
-function populateUsers(){
-  var randNums = [];
-  var users = [];
-  var userKeys = [];
-  var c = -1;
-  //generate 40 rand numbers and store in array
-  for(var i = 0; i < 40; i++){
-    var count = 0;
-    random.getRandomInt(0, 11, function(err, value) {
-      randNums.push(value);
-      count++;
-      if(count === 40) next();
-    });
-  }
-  //create 40 users
-  function next(){
-    var emailStr, nameStr, fb, cat;
-    for(var i = 0; i < 40; i++){
-      emailStr = userEmails[i];
-      nameStr = 'user' + i;
-      fb = i < 10 ? true : false;
-      var hash = bcrypt.hashSync(nameStr);
-      userKeys.push(emailStr);
-      users.push({email: userEmails[i], passHash:hash, name:nameStr, fbConnect:fb, favCat:categories[randNums[i]],
-       profileImg:'/images/profile/profile'+i+'.png', posts:[] });
-    }
-    
-    riak.bucket('users').objects.get(userKeys).stream(function(results) {
-      results.on('data', function(obj) {
-        c++;
-        console.log(obj.key);
-        console.log('found');
-        
-        s1 = obj.key.indexOf('r') + 1;
-        s2 = obj.key.indexOf('@');
-        s = obj.key.substring(s1, s2);
-        key = s.parseInt(s);
-        console.log(key + ' !!! ');
-        console.log(obj.key);
-        
-        newObj = riak.bucket('users').objects.new(obj.key, users[key]);
-        newObj.metadata.vclock = obj.metadata.vclock;
-        newObj.save(function(err, saved){
-          console.log('user overwritten');
-        });
-      });
-      results.on('error', function(err){
-        c++;
-        //if not found, create new obj.
-        if(err.status_code === 404){
-          console.log('not found');
-          //console.log(err.data);
-          console.log(err.data);
-          s1 = err.data.indexOf('r') + 1;
-          s2 = err.data.indexOf('@');
-          s = err.data.substring(s1, s2);
-          key = parseInt(s, 10);
-          
-          newObj = riak.bucket('users').objects.new(err.data, users[key]);
-          newObj.save(function(err, saved){
-            console.log('new user saved!');
-          });
-        }
-      });
-      results.on('end', function(){
-        console.log('done');
-      });
-    });
-  }
-}
-
-var test_resolve = function(siblings){
-  for(var sib in siblings){
-    console.log(siblings[sib])
-  }
-}
-
-//Populate db with 80 gamepins
-function populatePins(){
-  var randCategories = [];
-  var randPosters = [];
-  var pinArray = [];
-  var pinKeys = [];
-  var c = -1;
-  //generate 80 random categories (12 categories) and 80 unique descriptions
-  for(var i = 0; i < 80; i++){
-    var count = 0;
-    random.getRandomInt(0, 11, function(err, value) {
-      randCategories.push(categories[value]);
-      count++;
-      if(count === 80) next();
-    });
-  }
-  function next(){
-    //generate 80 random posters (40 users)
-    for(var i = 0; i < 80; i++){
-      var count = 0;
-      var id = 101+i;
-      pinKeys.push(id);
-      random.getRandomInt(0, 39, function(err, value) {
-        randPosters.push(userEmails[value]);
-        count++;
-        if(count === 80) next2();
-      });
-    }
-    
-  }
-  function next2(){
-    //add the pin ID to the user
-    //get all these gamepin keys to see if the obj exists
-    riak.bucket('gamepins').objects.get(pinKeys).stream(function(results) {
-      // on data returns each object. Confirmed.
-      results.on('data', function(obj) {
-        console.log('found');
-        //Overwrite old object.
-        c = parseInt(obj.key, 10) - 101;
-        
-        newObj = riak.bucket('gamepins').objects.new(obj.key,
-          { posterId: userEmails[c%30], category: randCategories[c], description:'This is a pin '+c, returnAll:'y'});
-        //Must set vclock to match old object to overwrite it.
-        newObj.metadata.vclock = obj.metadata.vclock;
-        newObj.addToIndex('category', randCategories[c]);
-        newObj.save(function(err, saved){
-          console.log('gamepin overwritten:');
-          console.log(saved);
-        });
-        linkUsr = riak.bucket('users').objects.new('user'+c+'@gmail.com', function(err, usr){
-          usr.posts.push(obj.key);
-          usr.save(function(err, saved){
-          });
-        });
-      });
-  
-      results.on('error', function(err) {
-        //if not found, create new obj.
-        if(err.status_code === 404){
-          console.log('not found');
-          c = parseInt(err.data, 10) - 100;
-          newObj = riak.bucket('gamepins').objects.new(err.data,
-            { posterId: userEmails[c%30], category: randCategories[c], description:'This is a pin '+c, returnAll:'y' });
-          newObj.addToIndex('category', randCategories[c]);
-          newObj.save(function(err, saved){
-            console.log('new gamepin created:');
-            console.log(saved);
-          });
-        }
-        //console.warn(err);
-      });
-      results.on('end', function() {
-        console.log('done');
-      });
-    });
-    //add pin ID to user's post list
-  }
-}
-
-function removeSiblings(){
-  riak.bucket('gamepins').objects.all(function(err, objs){
-    for(obj in objs){
-      //objs[obj].siblings = null;
-      console.log(objs[obj]);
-      //objs[obj].save(function(err, obj){
-      //  console.log("Registered!");
-      //});
-    }
-  });
-}
-
-function getSiblings(){
-  var deletes = [];
-  riak.bucket('gamepins').objects.all(function(err, objs){
-    for(var obj in objs){
-      console.log(objs[obj].siblings);
-    }
   });
 }
 
@@ -451,15 +250,17 @@ app.post('/getBucket', function(req, res){
   var keys = [];
   mr.listKeys(req.body.bucket, function(results){
     keys = results.data;
+    console.log(results.data);
     if(keys.length > 0) next();
     else{
-      console.log('No '+ req.body.bucket +' in db. Unable to generate pins without owners.');
+      console.log('No '+ req.body.bucket +' in db.');
       return 0;
     }
   });
   //READ AND RESOLVE!!!
   function next(){
-    riak.bucket(req.body.bucket).objects.get(keys, util.stupid_resolve, function(err, objs){
+    conflicted = [];
+    riak.bucket(req.body.bucket).objects.get(keys, util.user_resolve, function(err, objs){
       if(err){
         console.log('Error:');
         console.log(err);
@@ -472,15 +273,33 @@ app.post('/getBucket', function(req, res){
       for(o in objs){
         //if siblings, write to resolve conflict
         if(objs[o].siblings){
-          objs[o].save(function(err, saved){
-            console.log('conflict resolved');
-            objList.push(saved);
-          });
+          conflicted.push(objs[o]);
         }
+        //if no siblings, push this to the array to be sent to front end
         else{
           objList.push(objs[o]);
         }
-        if(objList.length === objs.length) next2();
+        //if(objList.length === objs.length) next2();
+      }
+      //resove conflicts
+      var len = conflicted.length;
+      //if no conflicts, return objList
+      if(len <= 0){
+        return res.json(objList);
+      }
+      //if conflicts, write them to resolve.
+      else{
+        for(var c = 0; c < conflicted.length; c++){
+          (function(c){
+            conflicted[c].save(function(err, saved){
+              console.log('conflict resolved');
+              //clear siblings so we can convert to JSON
+              saved.siblings = null;
+              objList.push(saved);
+              if(c === len-1) next2();
+            });
+          })(c);
+        }
       }
     });
     function next2(){

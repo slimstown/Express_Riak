@@ -19,7 +19,6 @@ exports.listObjects = function(bucket, callback){
 }
 
 exports.listKeys = function(bucket, callback){
-  console.log('List all objects in this bucket!');
   app.riak.mapred.inputs(bucket)
     .map({
         language: 'erlang',
