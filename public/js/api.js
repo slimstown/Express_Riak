@@ -50,6 +50,7 @@ getBucket = function(bucketName){
             if(data[obj].data.posterId) text += '<td>'+ data[obj].data.posterId +'</td>'; else text += '<td></td>';
             if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
             if(data[obj].data.description) text += '<td>'+ data[obj].data.description +'</td>'; else text += '<td></td>';
+            if(data[obj].data.likedBy.length > 0) text += '<td>'+ data[obj].data.likedBy +'</td>'; else text += '<td></td>';
             text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
             text += '</tr>';
           }
@@ -69,7 +70,7 @@ getBucket = function(bucketName){
           $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th><th>Options</th><tr>');
           break;
         case 'gamepins':
-          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>Options</th><tr>');
+          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Options</th><tr>');
           break;
         case 'storepins':
           $('#object_table').append('<tr><th>ID</th><th>Price</th><th>Category</th><th>Options</th><tr>');

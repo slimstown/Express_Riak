@@ -11,7 +11,6 @@ exports.listObjects = function(bucket, callback){
 
     .execute(function(err, results) {
         if(!err){
-          console.log(results);
           if(callback) callback();
         }
     }

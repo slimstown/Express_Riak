@@ -18,46 +18,71 @@ var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.49', 8100)
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
 
-merge_resolve = function(siblings) {
-  function siblingLastModifiedSort(a, b) {
-    if(!a.metadata.last_modified || new Date(a.metadata.last_modified) < new Date(b.metadata.last_modified)) {
-      return 1;
-    }
-    else {
-      return -1;
-    }
-  }
-  siblings.sort(siblingLastModifiedSort);
-  //merge posts together
-  console.log('mergeresolve!');
-  for(var i = 1; i < siblings.length; i++){
-    siblings[0].data.posts.concat(siblings[i].data.posts);
-  }
-  return siblings[0];
-}
+winston.log('info', 'Hello from Winston!');
+winston.info('This also works');
 
 //IT ALL STARTS HERE
 riak.ping(function(err, response){
+  //util.listKeys('gamepins');
+  //util.indexPins();
+  //util.getPinCategory();
+  /******** DONE *********/
   //util.generateUsers(0, 10);
   //util.generatePins(0, 20);
   //util.link('user1@gmail.com', 101);
-  //util.link('user1@gmail.com', 102);
   //util.clearLinks('user1@gmail.com');
   //util.clearConflicts();
   //util.readAndResolve('user1@gmail.com');
-  //util.like('user1@gmail.com', 109);
+  util.like('user4@gmail.com', 103);
+  util.like('user4@gmail.com', 101);
+  util.like('user4@gmail.com', 102);
+  
+  //util.unlike('user7@gmail.com', 102);
+  /*util.postPin(200, { posterId: 'user0@gmail.com',
+    repinVia: null,
+    category: 'Casino',
+    content: '',
+    sourceUrl: null,
+    gameName: null,
+    publisher: null,
+    description: 'This is pin 100',
+    datePosted: null,
+    groupId: null,
+    returnAll: 'y'
+  });*/
   
   /******TODO*****/
   //add dateJoined & datePosted
   //fill in other relevant fields
-  //util.unlike()
   //util.follow('user1@gmail.com', 'user3@gmaill.com') //follow is a 1 way procss
   //util.friend('user1@gmail.com', 'user2@gmail.com') //friend sends request. Upon confirmation, 2 way friendship and followership is achieved
   //util.unfollow(user1, user2);
   //util.defriend();
-  //util.postPin();
-  //util.rePin();
-  //util.editPin();
+  
+  /*util.repin(201, { posterId: 'user4@gmail.com',
+    repinVia: 'user1@gmail.com',
+    category: 'Casino',
+    content: '',
+    sourceUrl: null,
+    gameName: null,
+    publisher: null,
+    description: 'This is pin 100',
+    datePosted: null,
+    groupId: null,
+    returnAll: 'y'
+  });*/
+  /*util.editPin(101, { posterId: 'user0@gmail.com',
+    repinVia: null,
+    category: 'Horror',
+    content: '',
+    sourceUrl: null,
+    gameName: null,
+    publisher: null,
+    description: 'This is pin 1!',
+    datePosted: null,
+    groupId: null,
+    returnAll: 'y'
+  });*/
   //util.deletePin();
   //util.makeGroup();
   //util.editGroup();
@@ -86,17 +111,6 @@ riak.ping(function(err, response){
   
   //mr.deleteObjects('gamepins');
   //mr.deleteObjects('users');
-  
-  //populateUsers();
-  //populatePins();
-  //link();
-  //unlink();
-  //query('139');
-  //addPin();
-  //removeConflict();
-  
-  //removeSiblings();
-  //getSiblings();
 });
 
 function unlink(){
@@ -179,8 +193,6 @@ app.configure(function(){
   });
 });
 
-winston.log('info', 'Hello from Winston!');
-winston.info('This also works');
 
 /* AJAX API */
 //edit user
@@ -250,7 +262,6 @@ app.post('/getBucket', function(req, res){
   var keys = [];
   mr.listKeys(req.body.bucket, function(results){
     keys = results.data;
-    console.log(results.data);
     if(keys.length > 0) next();
     else{
       console.log('No '+ req.body.bucket +' in db.');
@@ -260,7 +271,10 @@ app.post('/getBucket', function(req, res){
   //READ AND RESOLVE!!!
   function next(){
     conflicted = [];
-    riak.bucket(req.body.bucket).objects.get(keys, util.user_resolve, function(err, objs){
+    var resolve_func;
+    if(req.body.bucket === 'gamepins') resolve_func = util.pin_resolve;
+    else if(req.body.bucket === 'users') resolve_func = util.user_resolve;
+    riak.bucket(req.body.bucket).objects.get(keys, resolve_func, function(err, objs){
       if(err){
         console.log('Error:');
         console.log(err);
@@ -269,26 +283,22 @@ app.post('/getBucket', function(req, res){
       //if nodiak gives us a single object, convert that into an array with 1 element
       if(objs && Object.prototype.toString.call( objs ) === '[object Object]')
         objs = [objs];
-      //loop through all found objects and overwrite them
+      //Add conflicts to queue to be resolved
       for(o in objs){
-        //if siblings, write to resolve conflict
-        if(objs[o].siblings){
+        if(objs[o].siblings)
           conflicted.push(objs[o]);
-        }
-        //if no siblings, push this to the array to be sent to front end
-        else{
+        else
           objList.push(objs[o]);
-        }
-        //if(objList.length === objs.length) next2();
       }
-      //resove conflicts
       var len = conflicted.length;
       //if no conflicts, return objList
       if(len <= 0){
+        console.log('got all '+req.body.bucket+' objects');
         return res.json(objList);
       }
-      //if conflicts, write them to resolve.
+      //if conflicts, resolve them
       else{
+        var clock = 0;
         for(var c = 0; c < conflicted.length; c++){
           (function(c){
             conflicted[c].save(function(err, saved){
@@ -296,7 +306,8 @@ app.post('/getBucket', function(req, res){
               //clear siblings so we can convert to JSON
               saved.siblings = null;
               objList.push(saved);
-              if(c === len-1) next2();
+              if(clock === conflicted.length-1) next2();
+              clock++;
             });
           })(c);
         }
