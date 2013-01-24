@@ -29,13 +29,37 @@ riak.ping(function(err, response){
   /******** DONE *********/
   //util.generateUsers(0, 10);
   //util.generatePins(0, 20);
+  /*util.postPin(251, { posterId: 'user1@gmail.com',
+          likedBy: [],
+          repinVia: null,
+          category: 'Shooter',
+          content: null,
+          sourceUrl: null,
+          gameName: null,
+          publisher: null,
+          description: 'This is pin 151',
+          datePosted: null,
+          groupId: null,
+          returnAll: 'y',
+          changes:{ likedBy: {add:[], remove:[]}
+                  }
+  });*/
+  //util.like('user7@gmail.com', 251);
+  //util.like('user8@gmail.com', 251);
+  //util.like('user9@gmail.com', 251);
+  //util.deletePin(251);
+  //util.deletePin(108);
+  //mr.deleteObjects('gamepins');
+  //mr.deleteObjects('users');
   //util.link('user1@gmail.com', 101);
   //util.clearLinks('user1@gmail.com');
   //util.clearConflicts();
   //util.readAndResolve('user1@gmail.com');
-  util.like('user4@gmail.com', 103);
-  util.like('user4@gmail.com', 101);
-  util.like('user4@gmail.com', 102);
+  //util.like('user3@gmail.com', 108);
+  //util.like('user5@gmail.com', 108);
+  //util.like('user6@gmail.com', 108);
+  //util.like('user7@gmail.com', 108);
+  //util.unlike('user3@gmail.com', 108);
   
   //util.unlike('user7@gmail.com', 102);
   /*util.postPin(200, { posterId: 'user0@gmail.com',
@@ -108,9 +132,6 @@ riak.ping(function(err, response){
   //  console.log(results);
   //});
   //mr.listKeys('gamepins');
-  
-  //mr.deleteObjects('gamepins');
-  //mr.deleteObjects('users');
 });
 
 function unlink(){
@@ -285,6 +306,15 @@ app.post('/getBucket', function(req, res){
         objs = [objs];
       //Add conflicts to queue to be resolved
       for(o in objs){
+        if(resolve_func === util.pin_resolve){
+          //clear changes
+          objs[o].data.changes.likedBy.length = 0;
+        }
+        else if(resolve_func === util.user_resolve){
+          //clear changes
+          objs[o].data.changes.posts.length = 0;
+          objs[o].data.changes.likes.length = 0;
+        }
         if(objs[o].siblings)
           conflicted.push(objs[o]);
         else

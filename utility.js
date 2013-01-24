@@ -62,6 +62,25 @@ var pin_resolve = exports.pin_resolve = function(siblings){
   }
   //sort by timestamp to get last written user at siblings[0]
   siblings.sort(siblingLastModifiedSort);
+  var net_changes = { likedBy: {add:[], remove:[], edit:[]}
+                    };
+  
+  //join sibling changes into net changes
+  for(var s = 0; s < siblings.length; s++){
+    net_changes.likedBy.add = net_changes.likedBy.add.concat(siblings[s].data.changes.likedBy.add);
+    net_changes.likedBy.remove = net_changes.likedBy.remove.concat(siblings[s].data.changes.likedBy.remove);
+  }
+  //Add LikedBy
+  siblings[0].data.likedBy = siblings[0].data.likedBy.concat(net_changes.likedBy.add);
+  siblings[0].data.likedBy = arrNoDupe(siblings[0].data.likedBy);
+  //Delete LikedBy
+  for(var p in net_changes.likedBy.remove){
+    if(siblings[0].data.likedBy.indexOf(net_changes.likedBy.remove[p]) !== -1)
+      siblings[0].data.likedBy.splice(siblings[0].data.likedBy.indexOf(net_changes.likedBy.remove[p]), 1);
+  }
+  return siblings[0];
+  
+  /*
   var merge_likedBy = false;
   
   for(var s = 1; s < siblings.length; s++){
@@ -72,7 +91,7 @@ var pin_resolve = exports.pin_resolve = function(siblings){
   }
   if(merge_likedBy)
     siblings[0].data.likedBy = arrNoDupe(siblings[0].data.likedBy);
-  return siblings[0];
+  return siblings[0];*/
 }
 
 //Use last write wins to get the latest sibling
@@ -90,9 +109,37 @@ var user_resolve = exports.user_resolve = function(siblings){
     else
       return -1;
   }
-  //sort by timestamp to get last written user at siblings[0]
   siblings.sort(siblingLastModifiedSort);
-  var merge_posts = false,
+  var net_changes = { posts: {add:[], remove:[], edit:[]},
+                      likes: {add:[], remove:[], edit:[]}
+                    };
+  
+  //join sibling changes into net changes
+  for(var s = 0; s < siblings.length; s++){
+    net_changes.posts.add = net_changes.posts.add.concat(siblings[s].data.changes.posts.add);
+    net_changes.posts.remove = net_changes.posts.remove.concat(siblings[s].data.changes.posts.remove);
+    net_changes.likes.add = net_changes.likes.add.concat(siblings[s].data.changes.likes.add);
+    net_changes.likes.remove = net_changes.likes.remove.concat(siblings[s].data.changes.likes.remove);
+  }
+  //Add Posts
+  siblings[0].data.posts = siblings[0].data.posts.concat(net_changes.posts.add);
+  siblings[0].data.posts = arrNoDupe(siblings[0].data.posts);
+  //Delete Posts
+  for(var p in net_changes.posts.remove){
+    if(siblings[0].data.posts.indexOf(net_changes.posts.remove[p]) !== -1)
+      siblings[0].data.posts.splice(siblings[0].data.posts.indexOf(net_changes.posts.remove[p], 1));
+  }
+  //Add Likes
+  siblings[0].data.likes = siblings[0].data.likes.concat(net_changes.likes.add);
+  siblings[0].data.likes = arrNoDupe(siblings[0].data.likes);
+  //Delete Likes
+  for(var p in net_changes.posts.remove){
+    if(siblings[0].data.likes.indexOf(net_changes.likes.remove[p]) !== -1)
+      siblings[0].data.likes.splice(siblings[0].data.likes.indexOf(net_changes.likes.remove[p]), 1);
+  }
+  return siblings[0];
+  
+  /*var merge_posts = false,
       merge_likes = false;
   for(var s = 1; s < siblings.length; s++){
     if(siblings[0].data.posts.toString() !== siblings[s].data.posts.toString()){
@@ -109,7 +156,7 @@ var user_resolve = exports.user_resolve = function(siblings){
     siblings[0].data.posts = arrNoDupe(siblings[0].data.posts);
   if(merge_likes)
     siblings[0].data.likes = arrNoDupe(siblings[0].data.likes);
-  return siblings[0];
+  return siblings[0];*/
 }
 
 //12 categories
@@ -131,31 +178,6 @@ exports.getPinCategory = function(){
     console.log(err);
     console.log(keys);
   });
-}
-
-exports.indexPins = function(){
-  var objList = [];
-  var keys = [];
-  mr.listKeys('gamepins', function(results){
-    keys = results.data;
-    if(keys.length > 0) next();
-    else{
-      console.log('No '+ req.body.bucket +' in db.');
-      return 0;
-    }
-  });
-  function next(){
-    app.riak.bucket('gamepins').objects.get(keys, user_resolve, function(err, objs){
-      for(var o = 0; o < objs.length; o++){
-        (function(o){
-          objs[o].addToIndex('category', objs[o].data.category);
-          objs[o].save(function(err, saved){
-            console.log('category indexed');
-          });
-        })(o);
-      }
-    });
-  }
 }
 
 //generate n users. Range s to n-1.
@@ -185,7 +207,10 @@ exports.generateUsers = function(s, n){
         followers:[],
         following:[],
         friends:[],
-        recentActivity:[]
+        recentActivity:[],
+        changes:{ posts: {add:[], remove:[]},
+                  likes: {add:[], remove:[]}
+                }
       }
     );
   }
@@ -224,6 +249,9 @@ exports.generateUsers = function(s, n){
         objs = [objs];
       //loop through all found objects and overwrite them
       for(var o = 0; objs && o < objs.length; o++){
+        //clear changes
+        obj.data.changes.posts.length = 0;
+        obj.data.changes.likes.length = 0;
         sub = objs[o].key.substring(objs[o].key.indexOf('r') + 1, objs[o].key.indexOf('@'));
         key = parseInt(sub, 10);
         if(objs[o].siblings) console.log('siblings found and resolved');
@@ -289,7 +317,9 @@ exports.generatePins = function(s, n){
           description: 'This is pin ' + i,
           datePosted: null,
           groupId: null,
-          returnAll: 'y'
+          returnAll: 'y',
+          changes:{ likedBy: {add:[], remove:[]}
+                  }
         }
       );
     }
@@ -339,6 +369,8 @@ exports.generatePins = function(s, n){
         objs = [objs];
       //loop through all found objects and overwrite them
       for(var o = 0; objs && o < objs.length; o++){
+        //clear changes
+        objs[o].data.changes.likedBy.length = 0;
         var merge_pin = app.riak.bucket('gamepin').objects.new(objs[o].key, pinArray[objs[o].key - 100]);
         merge_pin.metadata.vclock = objs[o].metadata.vclock;
         merge_pin.save(function(err, saved){
@@ -352,9 +384,17 @@ exports.generatePins = function(s, n){
   function userLink(ownerId, postId){
     var update_user = app.riak.bucket('users').objects.new(ownerId);
     update_user.fetch(user_resolve, function(err, obj){
+      if(err){
+        console.log("Error " + err);
+        return;
+      }
+      //clear changes
+      obj.data.changes.posts.length = 0;
+      obj.data.changes.likes.length = 0;
       if(obj.siblings) console.log('siblings found and resolved');
       console.log(obj);
       update_user.data.posts.push(postId);
+      update_user.data.changes.posts.add.push(postId);
       update_user.save(function(err, saved){
         console.log('link');
       });
@@ -370,11 +410,16 @@ var link = exports.link = function(userId, pinId){
       console.log('err');
       console.log(err);
     }
+    //clear changes
+    obj.data.changes.posts.length = 0;
+    obj.data.changes.likes.length = 0;
+  
     console.log('userId: '+userId + ' pinId:' + pinId);
     console.log('before: [' + obj.data.posts + ']');
     //add this pin to the user object
     if(obj.data.posts.indexOf(pinId) === -1){
       obj.data.posts.push(pinId);
+      obj.data.changes.posts.add.push(pinId);
       console.log('happening');
     }
     obj.save(function(err, saved){
@@ -387,6 +432,13 @@ var link = exports.link = function(userId, pinId){
 var clearLinks = exports.clearLinks = function(userId){
   usr = app.riak.bucket('users').objects.new(userId);
   usr.fetch(user_resolve, function(err, obj){
+    if(err){
+      console.log("Error: " + err);
+      return;
+    }
+    //clear changes
+    obj.data.changes.posts.length = 0;
+    obj.data.changes.likes.length = 0;
     obj.data.posts = [];
     obj.save(function(err, saved){
       console.log('after: [' +saved.data.posts + ']');
@@ -398,6 +450,13 @@ var clearLinks = exports.clearLinks = function(userId){
 var readAndResolve = exports.readAndResolve = function(userId){
   usr = app.riak.bucket('users').objects.new(userId);
   usr.fetch(user_resolve, function(err, obj){
+    if(err){
+      console.log("Error: " + err);
+      return
+    }
+    //clear changes
+    obj.data.changes.posts.length = 0;
+    obj.data.changes.likes.length = 0;
     obj.save(function(err, saved){
       console.log(saved);
     });
@@ -407,7 +466,10 @@ var readAndResolve = exports.readAndResolve = function(userId){
 var like = exports.like = function(userId, pinId){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
-    if(err) console.log('Error: ' + err);
+    if(err){
+      console.log('Error: ' + err);
+      return;
+    }
     if(result) next();
     else console.log('Error: pin ' + pinId + 'not found in db');
   });
@@ -419,9 +481,14 @@ var like = exports.like = function(userId, pinId){
         console.log('Error:' + err);
         return;
       }
+      //clear changes
+      obj.data.changes.posts.length = 0;
+      obj.data.changes.likes.length = 0;
       console.log(userId + ' liked pin #'+pinId);
-      if(obj.data.likes.indexOf(pinId) === -1)
+      if(obj.data.likes.indexOf(pinId) === -1){
         obj.data.likes.push(pinId);
+        obj.data.changes.likes.add.push(pinId);
+      }
       else
         console.log('Error: '+ userId + 'already liked this pin');
       obj.save(function(err, saved){
@@ -434,8 +501,16 @@ var like = exports.like = function(userId, pinId){
   function next2(){
     var pin = app.riak.bucket('gamepins').object.new(pinId);
     pin.fetch(pin_resolve, function(err, obj){
-      if(obj.data.likedBy.indexOf(userId) === -1)
+      if(err){
+        console.log("Error: " +err);
+        return;
+      }
+      //clear changes
+      obj.data.changes.likedBy.length = 0;
+      if(obj.data.likedBy.indexOf(userId) === -1){
         obj.data.likedBy.push(userId);
+        obj.data.changes.likedBy.add.push(userId);
+      }
       else
         console.log('Error: ' + userId + 'already in pin '+ pinId + 's likedBy list');
       obj.save(function(err, saved){
@@ -448,10 +523,14 @@ var like = exports.like = function(userId, pinId){
 var unlike = exports.unlike = function(userId, pinId){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
-    if(err) console.log('Error: ' + err);
+    if(err){
+      console.log('Error: ' + err);
+      return;
+    }
     if(result) next();
     else console.log('Error: pin ' + pinId + 'not found in db');
   });
+  //remove pinId from user's likes
   function next(){
     usr = app.riak.bucket('users').objects.new(userId);
     usr.fetch(user_resolve, function(err, obj){
@@ -459,13 +538,38 @@ var unlike = exports.unlike = function(userId, pinId){
         console.log('Error:' + err);
         return;
       }
+      //clear changes
+      obj.data.changes.posts.length = 0;
+      obj.data.changes.likes.length = 0;
       console.log(userId + ' unliked pin #'+pinId);
       if(obj.data.likes.indexOf(pinId) !== -1){
         obj.data.likes.splice(obj.data.likes.indexOf(pinId), 1);
+        obj.data.changes.likes.remove.push(pinId);
       }
       obj.save(function(err, saved){
         console.log('like removed from '+userId+': [' +saved.data.likes + ']');
-      })
+        next2();
+      });
+    });
+  }
+  //remove userId from pin's likedBy
+  function next2(){
+    pin = app.riak.bucket('gamepins').objects.new(pinId);
+    pin.fetch(pin_resolve, function(err, obj){
+      if(err){
+        console.log('Error:' + err);
+        return;
+      }
+      //clear changes
+      obj.data.changes.likedBy.length = 0;
+      console.log('Pin #'+pinId + ' removed ' +userId+ 'from likedBy list');
+      if(obj.data.likedBy.indexOf(userId) !== -1){
+        obj.data.likedBy.splice(obj.data.likedBy.indexOf(userId), 1);
+        obj.data.changes.likedBy.remove.push(userId);
+      }
+      obj.save(function(err, saved){
+        console.log('result liked list: [' + saved.data.likedBy +  ']');
+      });
     });
   }
 }
@@ -481,32 +585,62 @@ var friend = exports.frend = function(source, target){
 var postPin = exports.postPin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
-    if(err) console.log('Error: ' + err);
-    if(!result) next();
-    else console.log('Error: pin ' + pinId + 'already exists in db');
+    if(err){
+      console.log('Error: ' + err);
+      return;
+    }
+    if(result){
+      overwrite();
+      console.log('Pin already exists in db. Overwriting pin #' + pinId);
+    }
+    else{
+      create();
+      console.log('Creating new pin # ' + pinId);
+    }
   });
-  function next(){
+  function create(){
     new_pin = app.riak.bucket('gamepins').object.new(pinId, pinData);
     new_pin.data.datePosted = getDate();
     new_pin.save(function(err, saved){
-      if(err) console.log('Error: ' + err);
       console.log(saved.data.posterId +' posted pin #'+pinId);
       link(saved.data.posterId, pinId);
     });
+  }
+  function overwrite(){
+    var old_pin = app.riak.bucket('gamepins').object.new(pinId);
+    var new_pin = app.riak.bucket('gamepins').object.new(pinId, pinData);
+    old_pin.fetch(pin_resolve, function(err, obj){
+      if(err){
+        console.log('Error: ' + err);
+        return;
+      }
+      new_pin.metadata.vclock = obj.metadata.vclock;
+      new_pin.save(function(err, saved){
+        console.log('Pin #' + pinId + 'overwritten');
+        link(saved.data.posterId, pinId);
+      });
+    });
+    
   }
 }
 //same as post, but given a repinVia param
 var repin = exports.repin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
-    if(err) console.log('Error: ' + err);
+    if(err){
+      console.log('Error: ' + err);
+      return;
+    }
     if(!result) next();
     else console.log('Error: pin ' + pinId + 'already exists in db');
   });
   function next(){
     new_pin = app.riak.bucket('gamepins').object.new(pinId, pinData);
     new_pin.save(function(err, saved){
-      if(err) console.log('Error: ' + err);
+      if(err){
+        console.log('Error: ' + err);
+        return
+      }
       console.log(saved.data.posterId +' repinned pin #'+pinId+ 'via '+saved.data.repinVia);
       link(saved.data.posterId, pinId);
     });
@@ -515,7 +649,10 @@ var repin = exports.repin = function(pinId, pinData){
 editPin = exports.editPin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
-    if(err) console.log('Error: ' + err);
+    if(err){
+      console.log('Error: ' + err);
+      return;
+    }
     if(result) next();
     else console.log('Error: pin ' + pinId + 'does not exist in db');
   });
@@ -523,6 +660,12 @@ editPin = exports.editPin = function(pinId, pinData){
     var old_pin = app.riak.bucket('gamepins').object.new(pinId);
     var new_pin = app.riak.bucket('gamepins').object.new(pinId, pinData);
     old_pin.fetch(pin_resolve, function(err, obj){
+      if(err){
+        console.log('Error: ' + err);
+        return;
+      }
+      //clear changes
+      obj.data.changes.likedBy.length = 0;
       new_pin.metadata.vclock = obj.metadata.vclock;
       new_pin.save(function(err, saved){
         console.log('Pin #' + pinId + 'overwritten');
@@ -533,19 +676,46 @@ editPin = exports.editPin = function(pinId, pinData){
 deletePin = exports.deletePin = function(pinId){
   old_pin = app.riak.bucket('gamepins').object.new(pinId);
   old_pin.fetch(user_resolve, function(err, pin_obj){
-    usr = app.riak.bucket('users').object.new(obj.data.posterId);
+    if(err){
+      console.log("Error: " + err);
+      return;
+    }
+    //clear changes
+    pin_obj.data.changes.likedBy.length = 0;
+    usr = app.riak.bucket('users').object.new(pin_obj.data.posterId);
     //remove reference from pin owner
     usr.fetch(user_resolve, function(err, usr_obj){
+      if(err){
+        console.log("Error: " + err);
+        return;
+      }
       usr_obj.data.posts.splice(usr_obj.data.posts.indexOf(pinId), 1);
+      usr_obj.data.changes.posts.remove.push(pinId);
       usr_obj.save(function(err, saved){
+        console.log('pin #' + pinId + 'removed from '+ saved.key);
+        console.log('result array [' + saved.data.posts + ']');
       });
     });
-    //get and remove all like references
-    //TODO
-    
-    //delete the pin itself
-    pin_obj.delete(function(err, obj){
-      console.log(pinId + 'deleted');
-    });
+    //get all users who liked this pin and remove that like
+    var clock = 0;
+    for(var i = 0; i < pin_obj.data.likedBy.length; i++){
+      (function(i){
+        var usr = app.riak.bucket('users').objects.new(pin_obj.data.likedBy[i]);
+        usr.fetch(user_resolve, function(err, obj){
+          obj.data.likes.splice(obj.data.likes.indexOf(pinId), 1);
+          obj.data.changes.likes.remove.push(pinId);
+          usr.save(function(err, saved){
+            if(clock === pin_obj.data.likedBy.length-1) next();
+            clock++;
+          });
+        });
+      })(i)
+    }
+    function next(){
+      //delete the pin itself
+      pin_obj.delete(function(err, obj){
+        console.log(pinId + 'deleted');
+      });
+    }
   });
 }
