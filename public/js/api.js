@@ -41,7 +41,9 @@ getBucket = function(bucketName){
             if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
             if(data[obj].data.posts.length > 0) text += '<td>'+ data[obj].data.posts + ' ('+ data[obj].data.posts.length+ ')' +'</td>'; else text += '<td></td>';
             if(data[obj].data.likes.length > 0) text += '<td>'+ data[obj].data.likes + ' ('+ data[obj].data.likes.length+ ')' +'</td>'; else text += '<td></td>';
-            text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
+            if(data[obj].data.followers.length > 0) text += '<td>'+ data[obj].data.followers + '</td>'; else text += '<td></td>';
+            if(data[obj].data.following.length > 0) text += '<td>'+ data[obj].data.following + '</td>'; else text += '<td></td>';
+            if(data[obj].data.friends.length > 0) text += '<td>'+ data[obj].data.friends + '</td>'; else text += '<td></td>';
             text += '</tr>';
           }
           else if(bucketName === 'gamepins'){
@@ -51,15 +53,24 @@ getBucket = function(bucketName){
             if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
             if(data[obj].data.description) text += '<td>'+ data[obj].data.description +'</td>'; else text += '<td></td>';
             if(data[obj].data.likedBy.length > 0) text += '<td>'+ data[obj].data.likedBy +'</td>'; else text += '<td></td>';
-            text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
+            if(data[obj].data.comments.length > 0){
+              text += '<td><select>';
+              for(c in data[obj].data.comments){
+                text += '<option>' + data[obj].data.comments[c] + '</option>';
+              }
+              text += '</select></td>';
+            }
+            else{
+              text += '<td></td>';
+            }
             text += '</tr>';
           }
-          else if(bucketName === 'storepins'){
+          else if(bucketName === 'comments'){
             text += '<tr>';
             if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
-            if(data[obj].data.price) text += '<td>'+ data[obj].data.price +'</td>'; else text += '<td></td>';
-            if(data[obj].data.category) text += '<td>'+ data[obj].data.category +'</td>'; else text += '<td></td>';
-            text += '<td><button class="delete">Delete</button><button class="edit">Edit</button></td>';
+            if(data[obj].data.pin) text += '<td>'+ data[obj].data.pin +'</td>'; else text += '<td></td>';
+            if(data[obj].data.poster) text += '<td>'+ data[obj].data.poster +'</td>'; else text += '<td></td>';
+            if(data[obj].data.content) text += '<td>'+ data[obj].data.content +'</td>'; else text += '<td></td>';
             text += '</tr>';
           }
         }
@@ -67,13 +78,14 @@ getBucket = function(bucketName){
       $('#object_table').empty();
       switch(bucketName){
         case 'users':
-          $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th><th>Options</th><tr>');
+          $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th>' +
+                                    '<th>Followers</th><th>Following</th><th>Friends</th><tr>');
           break;
         case 'gamepins':
-          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Options</th><tr>');
+          $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Comments</th><tr>');
           break;
-        case 'storepins':
-          $('#object_table').append('<tr><th>ID</th><th>Price</th><th>Category</th><th>Options</th><tr>');
+        case 'comments':
+          $('#object_table').append('<tr><th>ID</th><th>Pin</th><th>Poster</th><th>Content</th><tr>');
           break;
       }
       $('#object_table').append(text);

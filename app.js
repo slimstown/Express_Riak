@@ -6,6 +6,8 @@ var random = require('secure_random');
 var mr = require('./mapreduce');
 var util = require('./utility');
 var bcrypt = require('bcrypt-nodejs');
+var flake = require('flake');
+
 var app = express();
 
 //global vars
@@ -23,12 +25,21 @@ winston.info('This also works');
 
 //IT ALL STARTS HERE
 riak.ping(function(err, response){
-  //util.listKeys('gamepins');
-  //util.indexPins();
-  //util.getPinCategory();
-  /******** DONE *********/
+  /******** TESTS *********/
+  /*var changes = { posts: {add:[1,2], remove:[4,2,3]},
+                  likes: {add:[5,6], remove:[4,3]},
+                  followers: {add:[5,7], remove:[6,7,4]},
+                  following: {add:[4,6,2], remove:[4,2,3]},
+                  friends: {add:[2,3,5], remove:[2,5,3,5]}
+                };
+  util.clearChanges(changes);*/
   //util.generateUsers(0, 10);
   //util.generatePins(0, 20);
+  //mr.deleteObjects('gamepins');
+  //mr.deleteObjects('users');
+  //mr.deleteObjects('comments');
+  //util.addUser();
+  //util.deactivateUser('user3@gmail.com');
   /*util.postPin(251, { posterId: 'user1@gmail.com',
           likedBy: [],
           repinVia: null,
@@ -44,13 +55,8 @@ riak.ping(function(err, response){
           changes:{ likedBy: {add:[], remove:[]}
                   }
   });*/
-  //util.like('user7@gmail.com', 251);
-  //util.like('user8@gmail.com', 251);
-  //util.like('user9@gmail.com', 251);
-  //util.deletePin(251);
-  //util.deletePin(108);
-  //mr.deleteObjects('gamepins');
-  //mr.deleteObjects('users');
+  //util.deletePin('116');
+  
   //util.link('user1@gmail.com', 101);
   //util.clearLinks('user1@gmail.com');
   //util.clearConflicts();
@@ -60,27 +66,14 @@ riak.ping(function(err, response){
   //util.like('user6@gmail.com', 108);
   //util.like('user7@gmail.com', 108);
   //util.unlike('user3@gmail.com', 108);
-  
   //util.unlike('user7@gmail.com', 102);
-  /*util.postPin(200, { posterId: 'user0@gmail.com',
-    repinVia: null,
-    category: 'Casino',
-    content: '',
-    sourceUrl: null,
-    gameName: null,
-    publisher: null,
-    description: 'This is pin 100',
-    datePosted: null,
-    groupId: null,
-    returnAll: 'y'
-  });*/
   
   /******TODO*****/
-  //add dateJoined & datePosted
-  //fill in other relevant fields
-  //util.follow('user1@gmail.com', 'user3@gmaill.com') //follow is a 1 way procss
+  //util.follow('user4@gmail.com', 'user6@gmail.com'); //follow is a 1 way procss
+  //util.follow('user4@gmail.com', 'user7@gmail.com');
+  //util.follow('user4@gmail.com', 'user8@gmail.com');
   //util.friend('user1@gmail.com', 'user2@gmail.com') //friend sends request. Upon confirmation, 2 way friendship and followership is achieved
-  //util.unfollow(user1, user2);
+  //util.unfollow('user4@gmail.com', 'user8@gmail.com');
   //util.defriend();
   
   /*util.repin(201, { posterId: 'user4@gmail.com',
@@ -107,6 +100,14 @@ riak.ping(function(err, response){
     groupId: null,
     returnAll: 'y'
   });*/
+  //util.addComment(103, 'user9@gmail.com', 'This game was fun');
+  //util.addComment(103, 'user0@gmail.com', 'Yea the game was really fun!');
+  //util.addComment(103, 'user4@gmail.com', 'I did not think this game was fun >:[');
+  //util.deleteComment('199732672594055170');
+  //util.addComment(104, 'user2@gmail.com', 'This game was funny');
+  //util.addComment(104, 'user3@gmail.com', 'Yea the game was really funny!');
+  
+  
   //util.deletePin();
   //util.makeGroup();
   //util.editGroup();
@@ -126,12 +127,6 @@ riak.ping(function(err, response){
   /*** HOLD OFF FOR NOW ****/
   //util.addXP();
   //util.addBadge();
-  
-  //customResolve();
-  //mr.listKeys('gamepins', function(results){
-  //  console.log(results);
-  //});
-  //mr.listKeys('gamepins');
 });
 
 function unlink(){
@@ -305,16 +300,8 @@ app.post('/getBucket', function(req, res){
       if(objs && Object.prototype.toString.call( objs ) === '[object Object]')
         objs = [objs];
       //Add conflicts to queue to be resolved
-      for(o in objs){
-        if(resolve_func === util.pin_resolve){
-          //clear changes
-          objs[o].data.changes.likedBy.length = 0;
-        }
-        else if(resolve_func === util.user_resolve){
-          //clear changes
-          objs[o].data.changes.posts.length = 0;
-          objs[o].data.changes.likes.length = 0;
-        }
+      for(var o in objs){
+        util.clearChanges(objs[o]);
         if(objs[o].siblings)
           conflicted.push(objs[o]);
         else
