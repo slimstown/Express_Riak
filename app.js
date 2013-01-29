@@ -25,7 +25,7 @@ winston.info('This also works');
 riak.ping(function(err, response){ 
   //util.generateUsers(0, 10);
   //util.generatePins(0, 20);
-  util.populateDb();
+  //util.populateDb();
   //util.wipeDb();
   //mr.deleteObjects('gamepins');
   //mr.deleteObjects('users');
