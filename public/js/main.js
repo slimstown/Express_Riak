@@ -1,14 +1,9 @@
 $(document).ready(function(e){
-  //getBucket('users');
-  
-  //refresh view of all bucket objects
-  function refreshAll(bucket){
-    getBucket(bucket);
-  }
+  //Get list of objects in bucket
   $(document).on('click', '.buckets button', function(e){
     $('.selected').removeClass('selected');
     $(this).addClass('selected');
-    refreshAll($(this).text());
+    getBucket($(this).text());
   });
   //toggle options menu
   $('#toggle_options').click(function(e){
@@ -21,7 +16,7 @@ $(document).ready(function(e){
       $(this).text('Show Options');
     }
   });
-  //add user
+  //add user (not functional, kept as reference)
   $('#add_user').submit(function(e){
     $.ajax({
       type: 'post',
@@ -33,80 +28,15 @@ $(document).ready(function(e){
     });
     return false;
   });
-  //add gamepin
-  $('#add_gamepin').submit(function(e){
-    $.ajax({
-      type: 'post',
-      url: '/postGamePin',
-      data: $(this).serialize(),
-      success: function(data){
-        refreshAll($('.selected').text());
-      }
-    });
-    return false;
-  });
-  //add store
-  $('#add_storepin').submit(function(e){
-    $.ajax({
-      type: 'post',
-      url: '/postStorePin',
-      data: $(this).serialize(),
-      success: function(data){
-        refreshAll($('.selected').text());
-      }
-    });
-    return false;
-  });
-  //delete all objects in selected bucket
-  $('#delete_all').click(function(e){
-    var bucket = $('.selected').text();
-    $.ajax({
-      type: 'post',
-      url: '/delete_all',
-      data: 'bucket=' + bucket,
-      success: function(data){
-        refreshAll(bucket);
-        console.log('success');
-      }
-    });
-    return false;
-  });
+  //TODO: add gamepin
+  
   //display correct form to add object
   $('#obj_select').change(function(e){
     $('.visible').removeClass('visibe').addClass('hidden');
     var obj = $('#obj_select option').filter(':selected').text();
     $('#add_'+obj).removeClass('hidden').addClass('visible');
   });
-  //delete obj handler
-  $(document).on('click', '.delete', function(e){
-    var key = $(this).closest('tr').find('td:first-child a').text();
-    var bucket = $('.selected').text();
-    $.ajax({
-      type: 'post',
-      url: '/delete',
-      data: 'bucket=' + bucket + '&key=' + key,
-      success: function(data){
-        refreshAll(bucket);
-        console.log('success');
-      }
-    });
-    return false;
-  });
-  //edit user handler
-  $(document).on('click', '.edit', function(e){
-    var key = $(this).closest('tr').find('td:first-child a').text();
-    var bucket = $('.selected').text();
-    $.ajax({
-      type: 'post',
-      url: '/edit',
-      data: $('#add_user').serialize()+'&key='+key,
-      success: function(data){
-        refreshAll(bucket);
-        console.log('success');
-      }
-    });
-    return false;
-  });
+  
   //search via category
   $(document).on('submit', '#query_form', function(e){
     var category = $('#query_form select[name=category] option').filter(':selected').val();
@@ -192,13 +122,5 @@ $(document).ready(function(e){
       }
     });
     return false;
-  });
-  //post image to Riak
-  $('#post_img').click(function(e){
-    $.ajax({
-      url: '/saveImg',
-      success: function(data){
-      }
-    });
   });
 });

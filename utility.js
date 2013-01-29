@@ -4,6 +4,7 @@ var random = require('secure_random');
 var bcrypt = require('bcrypt-nodejs');
 var mr = require('./mapreduce');
 
+//Takes in array and returns new one with duplicate entries removed
 function arrNoDupe(a) {
     var temp = {};
     for (var i = 0; i < a.length; i++)
@@ -25,6 +26,7 @@ var clearChanges = exports.clearChanges = function(obj){
 }
 
 //returns date in mm/dd/yyyy format
+//TODO: Evaluate if this is good enough
 var getDate = exports.getDate = function(){
   var today = new Date();
   var dd = today.getDate();
@@ -34,17 +36,7 @@ var getDate = exports.getDate = function(){
   return today;
 }
 
-//conflict resolution
-var stupid_resolve = exports.stupid_resolve = function(siblings){
-  console.log('stupid resolve');
-  for(var s=0; s < siblings.length; s++){
-    console.log(siblings[s]);
-  }
-  console.log('End Siblings');
-  var resolved = siblings.pop();
-  return resolved;
-}
-
+//Default conflict resolution, returns latest sibling
 var last_write_wins = exports.last_write_wins = function(siblings){
   console.log('last_write_wins()');
   function siblingLastModifiedSort(a, b) {
@@ -59,6 +51,7 @@ var last_write_wins = exports.last_write_wins = function(siblings){
   return siblings[0];
 }
 
+//Conflict resolution for gamepins
 var pin_resolve = exports.pin_resolve = function(siblings){
   if(!siblings[0].data.posterId){
     console.log('pin_resolve called on non pin: calling default resolver');
@@ -104,8 +97,7 @@ var pin_resolve = exports.pin_resolve = function(siblings){
   
 }
 
-//Use last write wins to get the latest sibling
-//Merge all sibling's posts
+//Conflict resolution for user
 var user_resolve = exports.user_resolve = function(siblings){
   //Check to make sure our obj is a user, else call default resolver
   if(!siblings[0].data.email){
@@ -183,24 +175,8 @@ var categories = ['Casino', 'Casual', 'Shooter', 'Action',
                   'Simulation', 'Racing', 'Puzzle', 'Fighting',
                   'Social', 'Space', 'Horror', 'Strategy'];
 
-//get list of keys in sorted order using 2i
-exports.listKeys = function(bucket){
-  app.riak.bucket(bucket).search.twoi('category: Shooter', "*", function(err, keys){
-    console.log(keys);
-  });
-}
-
-//search via category
-exports.getPinCategory = function(){
-  console.log('getPinCategory');
-  app.riak.bucket('gamepins').search.twoi(['0','ZZZZZZZZ'], 'category', function(err, keys){
-    console.log(err);
-    console.log(keys);
-  });
-}
-
 //generate n users. Range s to n-1.
-exports.generateUsers = function(s, n){
+var generateUsers = exports.generateUsers = function(s, n, callback){
   var userArray = [];
   var userIds = [];
   var clock = s;
@@ -282,26 +258,9 @@ exports.generateUsers = function(s, n){
           console.log(saved.data.email);
         });
       }
+      callback();
     });
   }
-}
-
-exports.clearConflicts = function(){
-  var pinIds = [];
-  for(var i = 0; i < 50; i++){
-    pinIds.push(100 + i);
-  }
-  console.log(pinIds);
-  app.riak.bucket('gamepins').objects.get(pinIds, last_write_wins, function(err, objs){
-    for(var o = 0; o < objs.length; o++){
-      //console.log(objs[o].key);
-      var merge_pin = app.riak.bucket('gamepin').objects.new(objs[o].key, {dummy: '1'});
-      merge_pin.metadata.vclock = objs[o].metadata.vclock;
-      merge_pin.save(function(err, saved){
-        console.log(saved.key);
-      });
-    }
-  });
 }
 
 //generate n pins. range s to n-1
@@ -446,6 +405,7 @@ var link = exports.link = function(userId, pinId){
     });
   });
 }
+
 //clear all posts from a user
 var clearLinks = exports.clearLinks = function(userId){
   usr = app.riak.bucket('users').objects.new(userId);
@@ -463,22 +423,7 @@ var clearLinks = exports.clearLinks = function(userId){
   });
 }
 
-//read and resolve siblings for a single object
-var readAndResolve = exports.readAndResolve = function(userId){
-  usr = app.riak.bucket('users').objects.new(userId);
-  usr.fetch(user_resolve, function(err, obj){
-    if(err){
-      console.log("Fetch User: " + err);
-      return
-    }
-    //clear changes
-    clearChanges(obj);
-    obj.save(function(err, saved){
-      console.log(saved);
-    });
-  });
-}
-
+//Like a pin.  Sets up 2 way link between gamepin and user.
 var like = exports.like = function(userId, pinId){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
@@ -534,6 +479,7 @@ var like = exports.like = function(userId, pinId){
   }
 }
 
+//Unlike a pin.  Removes 2 way between gamepin and user.
 var unlike = exports.unlike = function(userId, pinId){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
@@ -586,7 +532,8 @@ var unlike = exports.unlike = function(userId, pinId){
     });
   }
 }
-//follow is a one way operation
+
+//Follow sets up 2 way link from user to user.
 var follow = exports.follow = function(sourceId, targetId){
   var src = app.riak.bucket('users').objects.new(sourceId);
   var targ = app.riak.bucket('users').objects.new(targetId);
@@ -640,6 +587,8 @@ var follow = exports.follow = function(sourceId, targetId){
     });
   } 
 }
+
+//Unfollow remotes 2 way link from user to user.
 var unfollow = exports.unfollow = function(sourceId, targetId){
   var src = app.riak.bucket('users').objects.new(sourceId);
   var targ = app.riak.bucket('users').objects.new(targetId);
@@ -693,9 +642,13 @@ var unfollow = exports.unfollow = function(sourceId, targetId){
     });
   }
 }
+
+//TODO
 var friend = exports.friend = function(sourceId, targetId){
   
 }
+
+//Create new gamepin or overwrite existing one. 
 var postPin = exports.postPin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
@@ -738,7 +691,8 @@ var postPin = exports.postPin = function(pinId, pinData){
     
   }
 }
-//same as post, but given a repinVia param
+
+//same as postPin, but given a repinVia param
 var repin = exports.repin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
@@ -757,7 +711,9 @@ var repin = exports.repin = function(pinId, pinData){
     });
   }
 }
-editPin = exports.editPin = function(pinId, pinData){
+
+//TODO
+/*editPin = exports.editPin = function(pinId, pinData){
   //check if pin exists
   app.riak.bucket('gamepins').object.exists(pinId, function(err, result){
     if(err){
@@ -782,7 +738,9 @@ editPin = exports.editPin = function(pinId, pinData){
       });
     });
   }
-}
+}*/
+
+//Remove poster reference, like references, and then delete the gamepin
 deletePin = exports.deletePin = function(pinId){
   old_pin = app.riak.bucket('gamepins').object.new(pinId);
   old_pin.fetch(pin_resolve, function(err, pin_obj){
@@ -842,6 +800,8 @@ deletePin = exports.deletePin = function(pinId){
   });
 }
 
+//Delete all pins, remove follower links, and then delete the user
+//TODO: Where will likes go?
 var deactivateUser = exports.deactivateUser = function(userId){
   var temp_usr = app.riak.bucket('users').objects.new(userId);
   var clock;
@@ -908,11 +868,12 @@ var deactivateUser = exports.deactivateUser = function(userId){
   });
   
 }
+
+//Get unique, roughly sequential ID from nodeflake server
 var prev = '';
 var generateId = exports.generateId = function(callback){
-  // make a GET request to id service to get an ID
-  console.log("generateId");
   var ID_obj;
+  //do GET request to nodeflake
   var options = {
     host: '10.0.1.29',
     port: 1337,
@@ -927,10 +888,10 @@ var generateId = exports.generateId = function(callback){
     });
     response.on('end', function() {
       ID_obj = JSON.parse(ID);
-      //if we generate 2 same ID in a row, try again
+      //if we get duplicate, retry
       if(ID_obj.id === prev){
         console.log('dupId: ' +ID_obj.id);
-        //recursive try again!
+        //recursive function
         return generateId(callback);
       }
       prev = ID_obj.id;
@@ -943,6 +904,8 @@ var generateId = exports.generateId = function(callback){
   }
 }
 
+//Creates new comment obj. 2 way link from comment to gamepin.
+//TODO: Link to user via 'recent activity'
 var addComment = exports.addComment = function(pinId, posterId, text){
   var commentId;
   console.log('addComment()');
@@ -977,6 +940,9 @@ var addComment = exports.addComment = function(pinId, posterId, text){
     });
   }
 }
+
+//Removes link to pin, then deletes comment.
+//TODO: Remove link from user's 'recent activity'
 var deleteComment = exports.deleteComment = function(commentId){
   console.log("DeleteComment()");
   var cmt = app.riak.bucket('comments').objects.new(commentId);
@@ -1009,5 +975,20 @@ var deleteComment = exports.deleteComment = function(commentId){
         console.log("Comment #"+deleted.key+ " deleted!");
       });
     }
+  });
+}
+
+//deletes all data from known buckets, effectively clearing the DB
+var wipeDb = exports.wipeDb = function(){
+  mr.deleteObjects('gamepins');
+  mr.deleteObjects('users');
+  mr.deleteObjects('comments');
+}
+
+//fill DB with users and gamepins. For testing purposes.
+var populateDb = exports.populateDb = function(){
+  generateUsers
+  generateUsers(0,10, function(){
+    generatePins(0,20);
   });
 }

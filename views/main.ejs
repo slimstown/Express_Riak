@@ -10,81 +10,7 @@
   <button id="toggle_options" >Show Options</button>
   <br />
   <div id="left" class="hidden">
-    <!-- Register -->
-    <b>Add
-      <select id="obj_select">
-        <option>user</option>
-        <option>gamepin</option>
-        <option>storepin</option>
-        <option></option>
-      </select>
-    </b>
-    <br />
-    <form id="add_user" class="visible">
-      Email<input type="text" name="email"></input><br />
-      Username<input type="text" name="name"></input><br />
-      Password<input type="text" name="passHash"></input><br />
-      fbConnect<input type="checkbox" name="fbConnect" value="true"></input><br />
-      <select name="favCat">
-        <option value="Casino">Casino</option>
-        <option value="Casual">Casual</option>
-        <option value="Shooter">Shooter</option>
-        <option value="Action">Action</option>
-        <option value="Simulation">Simulation</option>
-        <option value="Racing">Racing</option>
-        <option value="Puzzle">Puzzle</option>
-        <option value="Fighting">Fighting</option>
-        <option value="Social">Social</option>
-        <option value="Space">Space</option>
-        <option value="Horror">Horror</option>
-        <option value="Strategy">Strategy</option>
-      </select>
-      <input type="submit" value="Submit">
-    </form>
-    <form id="add_gamepin" class="hidden">
-      Poster ID<input type="text" name="posterId"></input><br />
-      Category<select name="category">
-        <option value="Casino">Casino</option>
-        <option value="Casual">Casual</option>
-        <option value="Shooter">Shooter</option>
-        <option value="Action">Action</option>
-        <option value="Simulation">Simulation</option>
-        <option value="Racing">Racing</option>
-        <option value="Puzzle">Puzzle</option>
-        <option value="Fighting">Fighting</option>
-        <option value="Social">Social</option>
-        <option value="Space">Space</option>
-        <option value="Horror">Horror</option>
-        <option value="Strategy">Strategy</option>
-      </select>
-      <br />
-      Description<input type="text" name="description"> </input>
-      <input type="submit" value="Submit">
-    </form>
-    <form id="add_storepin" class="hidden">
-      Price<input type="text" name="price"></input><br />
-      Category<select name="category">
-        <option value="Casino">Casino</option>
-        <option value="Casual">Casual</option>
-        <option value="Shooter">Shooter</option>
-        <option value="Action">Action</option>
-        <option value="Simulation">Simulation</option>
-        <option value="Racing">Racing</option>
-        <option value="Puzzle">Puzzle</option>
-        <option value="Fighting">Fighting</option>
-        <option value="Social">Social</option>
-        <option value="Space">Space</option>
-        <option value="Horror">Horror</option>
-        <option value="Strategy">Strategy</option>
-      </select>
-      <input type="submit" value="Submit">
-    </form>
-    <br />
-    <b>Bucket Options</b>
-    <br />
-    <button id="delete_all">Delete all</button>
-    <br />
-    <p> Search via category </p>
+    <p> Search GamePin via category </p>
     <form id="query_form">
       <select name="category">
         <option value="All">All</option>
@@ -138,9 +64,6 @@
       </table>
     </div>
     <div>Keys:<table border="1" class="keys"></table></pdiv>
-  </div>
-  <div>
-    <button id="post_img">Post Img</button>
   </div>
 </body>
 </html>
