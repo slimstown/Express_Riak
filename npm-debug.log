@@ -1,0 +1,133 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'install',
+1 verbose cli   'emiflake' ]
+2 info using npm@1.1.63
+3 info using node@v0.8.12
+4 verbose node symlink C:\Program Files\nodejs\\node.exe
+5 verbose read json C:\node\Express_Riak\package.json
+6 verbose read json C:\node\Express_Riak\node_modules\bcrypt-nodejs\package.json
+7 verbose read json C:\node\Express_Riak\node_modules\connect-redis\package.json
+8 verbose read json C:\node\Express_Riak\node_modules\ejs\package.json
+9 verbose read json C:\node\Express_Riak\node_modules\express\package.json
+10 verbose read json C:\node\Express_Riak\node_modules\flake\package.json
+11 verbose read json C:\node\Express_Riak\node_modules\http\package.json
+12 verbose read json C:\node\Express_Riak\node_modules\nodiak\package.json
+13 verbose read json C:\node\Express_Riak\node_modules\redis\package.json
+14 verbose read json C:\node\Express_Riak\node_modules\riak-js\package.json
+15 verbose read json C:\node\Express_Riak\node_modules\secure_random\package.json
+16 verbose read json C:\node\Express_Riak\node_modules\winston\package.json
+17 verbose from cache C:\node\Express_Riak\package.json
+18 verbose readDependencies using package.json deps
+19 verbose cache add [ 'emiflake', null ]
+20 silly cache add name=undefined spec="emiflake" args=["emiflake",null]
+21 verbose parsed url { pathname: 'emiflake', path: 'emiflake', href: 'emiflake' }
+22 silly lockFile d065d353-emiflake emiflake
+23 verbose lock emiflake C:\Users\Tony\AppData\Roaming\npm-cache\d065d353-emiflake.lock
+24 silly lockFile d065d353-emiflake emiflake
+25 verbose addNamed [ 'emiflake', '' ]
+26 verbose addNamed [ null, '' ]
+27 silly lockFile c158257a-emiflake emiflake@
+28 verbose lock emiflake@ C:\Users\Tony\AppData\Roaming\npm-cache\c158257a-emiflake.lock
+29 silly addNameRange { name: 'emiflake', range: '', hasData: false }
+30 verbose url raw emiflake
+31 verbose url resolving [ 'https://registry.npmjs.org/', './emiflake' ]
+32 verbose url resolved https://registry.npmjs.org/emiflake
+33 info trying registry request attempt 1 at 17:40:22
+34 verbose etag "3V51H0TXUTISHAMMJ18H5NF15"
+35 http GET https://registry.npmjs.org/emiflake
+36 http 304 https://registry.npmjs.org/emiflake
+37 silly registry.get cb [ 304,
+37 silly registry.get   { server: 'CouchDB/1.2.1 (Erlang OTP/R15B)',
+37 silly registry.get     etag: '"3V51H0TXUTISHAMMJ18H5NF15"',
+37 silly registry.get     date: 'Tue, 29 Jan 2013 01:38:43 GMT',
+37 silly registry.get     'content-length': '0' } ]
+38 verbose etag emiflake from cache
+39 silly addNameRange number 2 { name: 'emiflake', range: '', hasData: true }
+40 silly addNameRange versions [ 'emiflake', [ '1.0.0' ] ]
+41 verbose addNamed [ 'emiflake', '1.0.0' ]
+42 verbose addNamed [ '1.0.0', '1.0.0' ]
+43 silly lockFile f1726e60-emiflake-1-0-0 emiflake@1.0.0
+44 verbose lock emiflake@1.0.0 C:\Users\Tony\AppData\Roaming\npm-cache\f1726e60-emiflake-1-0-0.lock
+45 verbose read json C:\Users\Tony\AppData\Roaming\npm-cache\emiflake\1.0.0\package\package.json
+46 silly lockFile f1726e60-emiflake-1-0-0 emiflake@1.0.0
+47 silly lockFile c158257a-emiflake emiflake@
+48 silly resolved [ { name: 'emiflake',
+48 silly resolved     description: 'A utility library for creating a service that generates unique IDs at scale. Think of it as containing the common logic of Twitter\'s Snowflake and Boundary\'s Flake.',
+48 silly resolved     version: '1.0.0',
+48 silly resolved     url: 'http://github.com/pereckerdal/emiflake',
+48 silly resolved     author: { name: 'Per Eckerdal', email: 'per@emilir.com' },
+48 silly resolved     keywords: [ 'id', 'generation', 'distributed', 'flake' ],
+48 silly resolved     repository:
+48 silly resolved      { type: 'git',
+48 silly resolved        url: 'https://github.com/pereckerdal/emiflake.git' },
+48 silly resolved     engines: { node: '>=0.6.0' },
+48 silly resolved     scripts: { preinstall: 'node-waf configure build' },
+48 silly resolved     main: './src/emiflake',
+48 silly resolved     readme: '# emiflake\n\n`emiflake` is a node.js utility library for creating a service that generates unique IDs at scale. Think of it as containing the common logic of Twitter\'s Snowflake and Boundary\'s Flake, sans network and machine ID generation stuff.\n\n`emiflake` is useful if you want something like Snowflake, but don\'t want to use Zookeeper to coordinate the machine ID allocation. Another situation where the library is useful is when you want something like Boundary\'s Flake, but don\'t want to add a dependency to Erlang.\n\nIt is written in C++ as a node.js extension, because I am very uncomfortable trying to handle 64 bit integers with Javascript\'s floating point math. `flake.h` and `flake.cc` contain the actual logic, and are usable by themselves, without node.js.\n\nThe current implementation uses the C standard function `gettimeofday` to get the time.\n\n## Anatomy\n\nThe length of `emiflake` ids vary depending on the parameters: They are `timestampLength`+`sequenceNumberLength`+`machineNumberLength` bits long.\n\nThe structure of the ids are: The most significant bits contain the timestamp. After that is the sequence number, and last is the machine number.\n\n## When is it appropriate to use `emiflake` ids?\n\n`emiflake` ids are appropriate when using node.js and when [Boundary Flake](https://github.com/boundary/flake) ids or [Twitter Snowflake](https://github.com/twitter/snowflake) would be appropriate. The exact details are well documented on their respective GitHub repos.\n\n## Recommended parameters\n\nTo replicate the beavior of Boundary\'s Flake, use parameters like this:\n\n* `machineNumberLength`: 48, and use a MAC address as the machine number.\n* `sequenceNumberLength`: 16\n* `timestampLength`: 64\n* `timestampOffset`: 0\n\nTo do something similar to Twitter\'s Snowflake, use parameters like this:\n\n* `machineNumberLength`: 10, and use some coordination mechanism to choose the machine number.\n* `sequenceNumberLength`: 12\n* `timestampLength`: 41\n* `timestampOffset`: Something like (2012-1970)*365*24*60*60*1000\n\n## Getting started\n\nInstall with `npm`:\n\n    npm install emiflake\n\nGenerate an id:\n\n    var emiFlake = require(\'./emiflake\');\n    \n    var f = new emiFlake(new Buffer("mid"),\n                         /*machineNumberLength:*/24,\n                         /*sequenceNumberLength:*/16,\n                         /*timestampLength:*/24,\n                         /*timestampOffset:*/20000);\n    \n    f.generate(console.log);\n\n## API\n\n### new emiFlake(machineNumber, machineNumberLength, sequenceNumberLength, timestampLength[, timestampOffset])\n\nCreate a new flake object.\n\n* `machineNumber` must be a Buffer object\n* `machineNumberLength` should be an integer specifying how many bits of the `machineNumber` that should be used.\n* `sequenceNumberLength` should be an integer specifying how many bits the sequence number should use. Must be less than or equal to 64.\n* `timestampLength` should be an integer specifying how many bits the timestamp should use. Must be less than or equal to 64.\n* `timestampOffset` specifies the epoch, as a positive number of milliseconds since 00:00 Jan 1, 1970. Optional. The default value is 0. When using a small timestamp length, this parameter is useful to maximize the range. For instance, one could set the 0 timestamp to be at the start of 2012.\n\n### EmiFlake.generate(cb)\n\nGenerates a unique ID. `cb` should be a callback that takes the resulting ID as a buffer. In case of sequence number overflow or minor backward jumps in the wall time, it will wait and try again. If the wall time has jumped backwards a lot, `cb` will be invoked with `null`.\n\n`generate` never invokes `cb` before it returns.\n\nUnspecified return value.\n\n### EmiFlake.byteLength()\n\nReturns the size of ID buffers in bytes. This is equal to ceil(8*[the bit length]).\n\n### EmiFlake.bitLength()\n\nReturns the size of the IDs in bits.\n',
+48 silly resolved     _id: 'emiflake@1.0.0',
+48 silly resolved     _from: 'emiflake' } ]
+49 info install emiflake@1.0.0 into C:\node\Express_Riak
+50 info installOne emiflake@1.0.0
+51 verbose from cache C:\Users\Tony\AppData\Roaming\npm-cache\emiflake\1.0.0\package\package.json
+52 info C:\node\Express_Riak\node_modules\emiflake unbuild
+53 verbose read json C:\node\Express_Riak\node_modules\emiflake\package.json
+54 verbose tar unpack C:\Users\Tony\AppData\Roaming\npm-cache\emiflake\1.0.0\package.tgz
+55 silly lockFile 1443f854-press-Riak-node-modules-emiflake C:\node\Express_Riak\node_modules\emiflake
+56 verbose lock C:\node\Express_Riak\node_modules\emiflake C:\Users\Tony\AppData\Roaming\npm-cache\1443f854-press-Riak-node-modules-emiflake.lock
+57 silly gunzTarPerm modes [ '755', '644' ]
+58 silly gunzTarPerm extractEntry package.json
+59 silly gunzTarPerm modified mode [ 'package.json', 438, 420 ]
+60 silly gunzTarPerm extractEntry .npmignore
+61 silly gunzTarPerm modified mode [ '.npmignore', 438, 420 ]
+62 silly gunzTarPerm extractEntry README.md
+63 silly gunzTarPerm modified mode [ 'README.md', 438, 420 ]
+64 silly gunzTarPerm extractEntry LICENSE
+65 silly gunzTarPerm modified mode [ 'LICENSE', 438, 420 ]
+66 silly gunzTarPerm extractEntry src/emiflake.js
+67 silly gunzTarPerm modified mode [ 'src/emiflake.js', 438, 420 ]
+68 silly gunzTarPerm extractEntry src/test.js
+69 silly gunzTarPerm modified mode [ 'src/test.js', 438, 420 ]
+70 silly gunzTarPerm extractEntry src/EmiFlake.cc
+71 silly gunzTarPerm modified mode [ 'src/EmiFlake.cc', 438, 420 ]
+72 silly gunzTarPerm extractEntry src/EmiFlake.h
+73 silly gunzTarPerm modified mode [ 'src/EmiFlake.h', 438, 420 ]
+74 silly gunzTarPerm extractEntry src/flake.cc
+75 silly gunzTarPerm modified mode [ 'src/flake.cc', 438, 420 ]
+76 silly gunzTarPerm extractEntry src/flake.h
+77 silly gunzTarPerm modified mode [ 'src/flake.h', 438, 420 ]
+78 silly gunzTarPerm extractEntry src/module.cc
+79 silly gunzTarPerm modified mode [ 'src/module.cc', 438, 420 ]
+80 silly gunzTarPerm extractEntry wscript
+81 silly gunzTarPerm modified mode [ 'wscript', 438, 420 ]
+82 verbose read json C:\node\Express_Riak\node_modules\emiflake\package.json
+83 silly lockFile 1443f854-press-Riak-node-modules-emiflake C:\node\Express_Riak\node_modules\emiflake
+84 info preinstall emiflake@1.0.0
+85 verbose unsafe-perm in lifecycle true
+86 silly exec cmd "/c" "node-waf configure build"
+87 silly cmd,/c,node-waf configure build,C:\node\Express_Riak\node_modules\emiflake spawning
+88 info emiflake@1.0.0 Failed to exec preinstall script
+89 info C:\node\Express_Riak\node_modules\emiflake unbuild
+90 verbose from cache C:\node\Express_Riak\node_modules\emiflake\package.json
+91 info preuninstall emiflake@1.0.0
+92 info uninstall emiflake@1.0.0
+93 verbose true,C:\node\Express_Riak\node_modules,C:\node\Express_Riak\node_modules unbuild emiflake@1.0.0
+94 info postuninstall emiflake@1.0.0
+95 error emiflake@1.0.0 preinstall: `node-waf configure build`
+95 error `cmd "/c" "node-waf configure build"` failed with 1
+96 error Failed at the emiflake@1.0.0 preinstall script.
+96 error This is most likely a problem with the emiflake package,
+96 error not with npm itself.
+96 error Tell the author that this fails on your system:
+96 error     node-waf configure build
+96 error You can get their info via:
+96 error     npm owner ls emiflake
+96 error There is likely additional logging output above.
+97 error System Windows_NT 6.1.7601
+98 error command "C:\\Program Files\\nodejs\\\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install" "emiflake"
+99 error cwd C:\node\Express_Riak
+100 error node -v v0.8.12
+101 error npm -v 1.1.63
+102 error code ELIFECYCLE
+103 verbose exit [ 1, true ]

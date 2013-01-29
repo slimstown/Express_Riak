@@ -908,9 +908,10 @@ var deactivateUser = exports.deactivateUser = function(userId){
   });
   
 }
-
+var prev = '';
 var generateId = exports.generateId = function(callback){
-  // make a GET request to nodeflake to get an ID
+  // make a GET request to id service to get an ID
+  console.log("generateId");
   var ID_obj;
   var options = {
     host: '10.0.1.29',
@@ -926,6 +927,13 @@ var generateId = exports.generateId = function(callback){
     });
     response.on('end', function() {
       ID_obj = JSON.parse(ID);
+      //if we generate 2 same ID in a row, try again
+      if(ID_obj.id === prev){
+        console.log('dupId: ' +ID_obj.id);
+        //recursive try again!
+        return generateId(callback);
+      }
+      prev = ID_obj.id;
       next();
     });
   });
@@ -937,6 +945,7 @@ var generateId = exports.generateId = function(callback){
 
 var addComment = exports.addComment = function(pinId, posterId, text){
   var commentId;
+  console.log('addComment()');
   //validations
   //test if empty
   if(text === '' || text === null || text === undefined){
@@ -947,6 +956,7 @@ var addComment = exports.addComment = function(pinId, posterId, text){
   //comment length limit.
   generateId(function(id){
     commentId = id;
+    console.log(id);
     next();
   });
   function next(){

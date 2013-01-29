@@ -24,15 +24,9 @@ winston.log('info', 'Hello from Winston!');
 winston.info('This also works');
 
 //IT ALL STARTS HERE
-riak.ping(function(err, response){
+riak.ping(function(err, response){ 
   /******** TESTS *********/
-  /*var changes = { posts: {add:[1,2], remove:[4,2,3]},
-                  likes: {add:[5,6], remove:[4,3]},
-                  followers: {add:[5,7], remove:[6,7,4]},
-                  following: {add:[4,6,2], remove:[4,2,3]},
-                  friends: {add:[2,3,5], remove:[2,5,3,5]}
-                };
-  util.clearChanges(changes);*/
+  //util.clearChanges(changes);
   //util.generateUsers(0, 10);
   //util.generatePins(0, 20);
   //mr.deleteObjects('gamepins');
@@ -100,13 +94,10 @@ riak.ping(function(err, response){
     groupId: null,
     returnAll: 'y'
   });*/
-  //util.addComment(103, 'user9@gmail.com', 'This game was fun');
-  //util.addComment(103, 'user0@gmail.com', 'Yea the game was really fun!');
-  //util.addComment(103, 'user4@gmail.com', 'I did not think this game was fun >:[');
-  //util.deleteComment('199732672594055170');
-  //util.addComment(104, 'user2@gmail.com', 'This game was funny');
-  //util.addComment(104, 'user3@gmail.com', 'Yea the game was really funny!');
-  
+  //util.addComment(103, 'user9@gmail.com', 'This game was fun!!!');
+  //util.addComment(103, 'user0@gmail.com', 'Yea the game was really fun!!!');
+  //util.addComment(103, 'user4@gmail.com', 'I did not think this game was fun >:[!!!');
+  //util.deleteComment('200117125921247230');
   
   //util.deletePin();
   //util.makeGroup();
@@ -310,7 +301,7 @@ app.post('/getBucket', function(req, res){
       var len = conflicted.length;
       //if no conflicts, return objList
       if(len <= 0){
-        console.log('got all '+req.body.bucket+' objects');
+        console.log('no conflicts: Got all '+req.body.bucket+' objects');
         return res.json(objList);
       }
       //if conflicts, resolve them
@@ -324,6 +315,7 @@ app.post('/getBucket', function(req, res){
               saved.siblings = null;
               objList.push(saved);
               if(clock === conflicted.length-1) next2();
+              console.log("clock: "+clock);
               clock++;
             });
           })(c);
@@ -331,7 +323,7 @@ app.post('/getBucket', function(req, res){
       }
     });
     function next2(){
-      console.log('got all '+req.body.bucket+' objects');
+      console.log('conflicts solved: got all '+req.body.bucket+' objects');
       return res.json(objList);
     }
   }
