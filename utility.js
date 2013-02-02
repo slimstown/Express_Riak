@@ -1,4 +1,4 @@
-var app = require('./app.js');
+var app = require('./app');
 var http = require('http');
 var random = require('secure_random');
 var bcrypt = require('bcrypt-nodejs');
@@ -72,6 +72,7 @@ var pin_resolve = exports.pin_resolve = function(siblings){
   
   //join sibling changes into net changes
   for(var s = 0; s < siblings.length; s++){
+    console.log(siblings[s].data.comments);
     net_changes.likedBy.add = net_changes.likedBy.add.concat(siblings[s].data.changes.likedBy.add);
     net_changes.likedBy.remove = net_changes.likedBy.remove.concat(siblings[s].data.changes.likedBy.remove);
     net_changes.comments.add = net_changes.comments.add.concat(siblings[s].data.changes.comments.add);
@@ -93,8 +94,7 @@ var pin_resolve = exports.pin_resolve = function(siblings){
     if(siblings[0].data.comments.indexOf(net_changes.comments.remove[p]) !== -1)
       siblings[0].data.comments.splice(siblings[0].data.comments.indexOf(net_changes.comments.remove[p]), 1);
   }
-  return siblings[0];
-  
+  return siblings[0];  
 }
 
 //Conflict resolution for user
@@ -185,8 +185,8 @@ var generateUsers = exports.generateUsers = function(s, n, callback){
     //user schema
     userArray.push(
       { email: 'user' + i + '@gmail.com',
-        //passHash: bcrypt.hashSync('user'+i),
-        passHash: 'user'+i,
+        passHash: bcrypt.hashSync('user'+i),
+        //passHash: 'user'+i,
         name: 'user' + i,
         fbConnect: i%2==0 ? true : false,
         favCat: null,
@@ -264,11 +264,15 @@ var generateUsers = exports.generateUsers = function(s, n, callback){
 }
 
 //generate n pins. range s to n-1
-exports.generatePins = function(s, n){
+var generatePins = exports.generatePins = function(s, n){
   var pinArray = [];
   var pinIds = [];
   var clock;
   var user_keys = [];
+  
+  random.getRandomInt(0, 11, function(err, rand) {
+    console.log(rand);
+  });
   
   //get user keys
   mr.listKeys('users', function(results){
@@ -286,6 +290,7 @@ exports.generatePins = function(s, n){
       //gamepin schema
       pinArray.push(
         { posterId: null,
+          posterName: null,
           likedBy: [],
           repinVia: null,
           category: null,
@@ -317,13 +322,22 @@ exports.generatePins = function(s, n){
   //set random posterId
   function next2(){
     clock = s;
+  
     for(var i = s; i < n; i++){
-      (function(i){
-        random.getRandomInt(0, user_keys.length-1, function(err, rand) {
-          pinArray[i].posterId = user_keys[rand];
-          if(i === n-1) next3();
-        });
-      })(i);
+      pinArray[i].posterName = 'Test';
+      //secure_random cannot deal with range 0 to 0, hence this case
+      if(user_keys.length-1 === 0){
+        pinArray[i].posterId = user_keys[0];
+        if(i === n-1) next3();
+      }
+      else{
+        (function(i){
+          random.getRandomInt(0, user_keys.length-1, function(err, rand) {
+            pinArray[i].posterId = user_keys[rand];
+            if(i === n-1) next3();
+          });
+        })(i);
+      }
     }
   }
   //create new pin.  If one exists with current key, overwrite it.
@@ -987,7 +1001,6 @@ var wipeDb = exports.wipeDb = function(){
 
 //fill DB with users and gamepins. For testing purposes.
 var populateDb = exports.populateDb = function(){
-  generateUsers
   generateUsers(0,10, function(){
     generatePins(0,20);
   });

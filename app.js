@@ -2,7 +2,7 @@ var express = require('express');
 var http = require('http');
 var winston = require('winston');
 var fs = require('fs');
-var random = require('secure_random');
+//var random = require('secure_random');
 var mr = require('./mapreduce');
 var util = require('./utility');
 var bcrypt = require('bcrypt-nodejs');
@@ -23,7 +23,7 @@ winston.info('This also works');
 
 //IT ALL STARTS HERE
 riak.ping(function(err, response){ 
-  //util.generateUsers(0, 10);
+  //util.generateUsers(0, 10, function(){});
   //util.generatePins(0, 20);
   //util.populateDb();
   //util.wipeDb();
@@ -49,9 +49,18 @@ riak.ping(function(err, response){
   //util.deletePin('116');
   //util.like('user3@gmail.com', 108);
   //util.unlike('user7@gmail.com', 102);
+  //util.follow('user4@gmail.com', 'user9@gmail.com');
   //util.follow('user4@gmail.com', 'user8@gmail.com');
+  //util.follow('user4@gmail.com', 'user7@gmail.com');
+  //util.follow('user4@gmail.com', 'user6@gmail.com');
+  //util.follow('user4@gmail.com', 'user5@gmail.com');
   //util.unfollow('user4@gmail.com', 'user8@gmail.com');
-  //util.addComment(103, 'user9@gmail.com', 'This game was fun!!!');
+  //util.addComment(109, 'user0@gmail.com', 'This game was fun 9/10!!!');
+  //util.addComment(109, 'user8@gmail.com', 'This game was fun 8/10!!!');
+  //util.addComment(107, 'user3@gmail.com', 'This game was fun 7/10!!!');
+  //util.addComment(114, 'user3@gmail.com', 'This game was fun 6/10!!!');
+  //util.addComment(104, 'user5@gmail.com', 'This game was fun 5/10!!!');
+  //util.addComment(104, 'user4@gmail.com', 'This game was fun 4/10!!!');
   //util.deleteComment('200117125921247230');
 });
 
@@ -120,7 +129,7 @@ app.post('/getBucket', function(req, res){
     if(keys.length > 0) next();
     else{
       console.log('No '+ req.body.bucket +' in db.');
-      return 0;
+      return res.json(objList);
     }
   });
   //READ AND RESOLVE!!!
@@ -154,16 +163,19 @@ app.post('/getBucket', function(req, res){
       }
       //if conflicts, resolve them
       else{
+        console.log('!');
         var clock = 0;
         for(var c = 0; c < conflicted.length; c++){
-          (function(c){
-            conflicted[c].save(function(err, saved){
+          (function(d){
+            console.log('!!!');
+            conflicted[d].save(function(err, saved){
+              console.log(err);
+              console.log(saved);
               console.log('conflict resolved');
               //clear siblings so we can convert to JSON
               saved.siblings = null;
               objList.push(saved);
               if(clock === conflicted.length-1) next2();
-              console.log("clock: "+clock);
               clock++;
             });
           })(c);
