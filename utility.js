@@ -270,13 +270,10 @@ var generatePins = exports.generatePins = function(s, n){
   var clock;
   var user_keys = [];
   
-  random.getRandomInt(0, 11, function(err, rand) {
-    console.log(rand);
-  });
-  
   //get user keys
   mr.listKeys('users', function(results){
     user_keys = results.data;
+    console.log(user_keys);
     if(user_keys.length > 0) next();
     else{
       console.log('No users in db. Unable to generate pins without owners.');
@@ -310,20 +307,20 @@ var generatePins = exports.generatePins = function(s, n){
       );
     }
     //set random category
-    for(var i = s; i < n; i++){
+    for(var i = 0; i < (n-s); i++){
       (function(i){
         random.getRandomInt(0, 11, function(err, rand) {
           pinArray[i].category = categories[rand];
-          if(i === n-1) next2();
+          if(i === (n-s)-1) next2();
         });
       })(i);
     }
   }
   //set random posterId
   function next2(){
-    clock = s;
-  
-    for(var i = s; i < n; i++){
+    clock = 0;
+    console.log('next2');
+    for(var i = 0; i < (n-s); i++){
       pinArray[i].posterName = 'Test';
       //secure_random cannot deal with range 0 to 0, hence this case
       if(user_keys.length-1 === 0){
@@ -334,7 +331,7 @@ var generatePins = exports.generatePins = function(s, n){
         (function(i){
           random.getRandomInt(0, user_keys.length-1, function(err, rand) {
             pinArray[i].posterId = user_keys[rand];
-            if(i === n-1) next3();
+            if(i === (n-s)-1) next3();
           });
         })(i);
       }
@@ -354,6 +351,8 @@ var generatePins = exports.generatePins = function(s, n){
           var new_pin = app.riak.bucket('gamepins').objects.new(err[e].data, pinArray[err[e].data - 100]);
           new_pin.data.datePosted = getDate();
           new_pin.save(function(err, saved){
+            console.log(err);
+            console.log(saved);
             console.log('new gamepin created');
             link(saved.data.posterId, saved.key);
           });
@@ -397,6 +396,7 @@ var generatePins = exports.generatePins = function(s, n){
 
 //adds gamepin to user's posts
 var link = exports.link = function(userId, pinId){
+  console.log("userId: " + userId + " pinID: " + pinId);
   usr = app.riak.bucket('users').objects.new(userId);
   usr.fetch(user_resolve, function(err, obj){
     if(err){

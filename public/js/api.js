@@ -39,7 +39,14 @@ getBucket = function(bucketName){
             if(data[obj].data.name) text += '<td>'+ data[obj].data.name +'</td>'; else text += '<td></td>';
             if(data[obj].data.fbConnect) text += '<td>'+ data[obj].data.fbConnect +'</td>'; else text += '<td></td>';
             if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
-            if(data[obj].data.posts.length > 0) text += '<td>'+ data[obj].data.posts + ' ('+ data[obj].data.posts.length+ ')' +'</td>'; else text += '<td></td>';
+            if(data[obj].data.posts.length > 0){
+              text += '<td><select>';
+              for(p in data[obj].data.posts){
+                text += '<option>' + data[obj].data.posts[p] + '</option>';
+              }
+              text += '</select><span>' + ' ('+ data[obj].data.posts.length+ ') posts' + '<span></td>';
+            }
+            else text += '<td></td>';
             if(data[obj].data.likes.length > 0) text += '<td>'+ data[obj].data.likes + ' ('+ data[obj].data.likes.length+ ')' +'</td>'; else text += '<td></td>';
             if(data[obj].data.followers.length > 0) text += '<td>'+ data[obj].data.followers + '</td>'; else text += '<td></td>';
             if(data[obj].data.following.length > 0) text += '<td>'+ data[obj].data.following + '</td>'; else text += '<td></td>';

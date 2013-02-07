@@ -7671,3 +7671,259 @@
 {"level":"info","message":"This also works","timestamp":"2013-02-02T01:53:43.150Z"}
 {"level":"info","message":"POST","timestamp":"2013-02-02T01:53:48.746Z"}
 {"level":"info","message":"/getBucket","timestamp":"2013-02-02T01:53:48.746Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T17:59:15.113Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T17:59:15.114Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T17:59:21.650Z"}
+{"level":"info","message":"/viewBucket","timestamp":"2013-02-04T17:59:21.650Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T17:59:21.694Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T17:59:21.694Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T17:59:21.696Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T17:59:21.696Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T17:59:21.696Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T17:59:21.697Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T17:59:26.951Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T17:59:26.952Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T17:59:28.255Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T17:59:28.255Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T17:59:29.084Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T17:59:29.084Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:05:39.294Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:05:39.295Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T18:05:41.934Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T18:05:41.934Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:05:43.236Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:05:43.236Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:06:09.693Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:06:09.694Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:06:15.490Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:06:15.491Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:06:55.348Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:06:55.351Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:06:59.450Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:06:59.451Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:08:37.453Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:08:37.454Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T18:08:43.183Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T18:08:43.183Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:08:44.262Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:08:44.262Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:08:55.251Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:08:55.251Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:35:17.285Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:35:17.286Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T18:35:24.749Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T18:35:24.749Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:35:25.799Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:35:25.799Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:35:26.773Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:35:26.773Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:35:27.980Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:35:27.980Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:36:43.808Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:36:43.809Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:37:00.323Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:37:00.325Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:37:12.142Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:37:12.144Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:13.566Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:13.566Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:21.576Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:21.576Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:22.483Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:22.483Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:23.145Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:23.145Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:23.888Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:23.888Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:24.528Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:24.528Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:37:25.194Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:37:25.194Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T18:42:39.002Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T18:42:39.003Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T18:42:52.964Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T18:42:52.964Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:42:54.646Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:42:54.646Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:42:58.074Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:42:58.074Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:04.191Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:04.192Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:18.886Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:18.886Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:19.865Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:19.865Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:26.292Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:26.292Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:27.104Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:27.104Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:27.920Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:27.921Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T18:43:28.927Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T18:43:28.927Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T21:01:19.032Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T21:01:19.032Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T21:01:23.715Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T21:01:23.716Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T21:01:24.481Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T21:01:24.481Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T21:11:31.446Z"}
+{"level":"info","message":"/","timestamp":"2013-02-04T21:11:31.446Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T21:11:31.608Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T21:11:31.608Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T21:11:31.610Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T21:11:31.610Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-04T21:11:31.611Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-04T21:11:31.611Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-04T22:22:00.775Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-04T22:22:00.776Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T23:07:47.753Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T23:07:47.754Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T23:07:48.855Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T23:07:48.855Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T23:07:49.612Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T23:07:49.612Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-04T23:07:56.693Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-04T23:07:56.694Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:49.167Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:49.167Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:50.014Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:50.014Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:51.699Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:51.699Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:53.778Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:53.780Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:54.345Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:54.345Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:54.865Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:54.865Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:55.680Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:55.680Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:56.096Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:56.096Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:56.550Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:56.550Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:57.153Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:57.153Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:57.531Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:57.531Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:57.878Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:57.878Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T00:54:58.271Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T00:54:58.272Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T17:16:11.915Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T17:16:11.916Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T17:20:41.977Z"}
+{"level":"info","message":"/","timestamp":"2013-02-05T17:20:41.978Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T17:20:42.176Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-05T17:20:42.176Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T17:20:42.179Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-05T17:20:42.179Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T17:20:42.180Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-05T17:20:42.180Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T17:20:48.076Z"}
+{"level":"info","message":"/","timestamp":"2013-02-05T17:20:48.076Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:02:40.077Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:02:40.079Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:13:31.461Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:13:31.462Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:14:17.720Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:14:17.721Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:14:20.419Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:14:20.420Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:14:24.146Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:14:24.146Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:14:24.834Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:14:24.834Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:15:09.441Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:15:09.442Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:16:04.800Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:16:04.802Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:16:33.989Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:16:33.990Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:17:02.717Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:17:02.719Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:17:53.216Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:17:53.217Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:23:08.486Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:23:08.487Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:25:02.395Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:25:02.396Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:25:21.666Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:25:21.667Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:26:09.891Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:26:09.892Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:26:35.205Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:26:35.207Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:27:27.159Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:27:27.161Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:27:29.585Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:27:29.585Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:28:48.180Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:28:48.181Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T18:28:50.584Z"}
+{"level":"info","message":"/","timestamp":"2013-02-05T18:28:50.584Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:28:52.196Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:28:52.196Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:28:55.229Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:28:55.229Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:28:56.172Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:28:56.172Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:30:33.245Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:30:33.245Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:30:34.575Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:30:34.575Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:35:18.207Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:35:18.208Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:35:33.438Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:35:33.439Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:35:36.777Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:35:36.777Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:35:39.011Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:35:39.011Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:36:07.458Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:36:07.460Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:36:19.400Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:36:19.400Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:36:31.637Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:36:31.637Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:36:47.875Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:36:47.876Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:36:58.887Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:36:58.887Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-05T18:42:16.877Z"}
+{"level":"info","message":"/","timestamp":"2013-02-05T18:42:16.877Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T18:42:18.654Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T18:42:18.654Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-05T18:54:33.526Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-05T18:54:33.527Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T20:31:48.108Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T20:31:48.109Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T22:52:24.408Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T22:52:24.409Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T22:52:34.523Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T22:52:34.523Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T22:52:37.483Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T22:52:37.483Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T22:52:38.281Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T22:52:38.281Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-05T22:52:47.649Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-05T22:52:47.649Z"}
+{"level":"info","message":"Hello from Winston!","timestamp":"2013-02-06T17:26:13.180Z"}
+{"level":"info","message":"This also works","timestamp":"2013-02-06T17:26:13.182Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-06T17:26:33.770Z"}
+{"level":"info","message":"/","timestamp":"2013-02-06T17:26:33.771Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-06T17:26:35.101Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-06T17:26:35.101Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-06T17:26:35.103Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-06T17:26:35.103Z"}
+{"level":"info","message":"GET","timestamp":"2013-02-06T17:26:35.104Z"}
+{"level":"info","message":"/favicon.ico","timestamp":"2013-02-06T17:26:35.104Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-06T20:43:41.728Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-06T20:43:41.728Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-06T20:43:42.479Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-06T20:43:42.479Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-06T20:43:43.609Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-06T20:43:43.609Z"}
+{"level":"info","message":"POST","timestamp":"2013-02-06T20:43:50.499Z"}
+{"level":"info","message":"/getBucket","timestamp":"2013-02-06T20:43:50.499Z"}

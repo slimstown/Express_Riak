@@ -23,8 +23,8 @@ winston.info('This also works');
 
 //IT ALL STARTS HERE
 riak.ping(function(err, response){ 
-  //util.generateUsers(0, 10, function(){});
-  //util.generatePins(0, 20);
+  //util.generateUsers(0, 20, function(){});
+  //util.generatePins(0, 200);
   //util.populateDb();
   //util.wipeDb();
   //mr.deleteObjects('gamepins');
@@ -170,8 +170,9 @@ app.post('/getBucket', function(req, res){
             console.log('!!!');
             conflicted[d].save(function(err, saved){
               console.log(err);
-              console.log(saved);
+              //console.log(saved);
               console.log('conflict resolved');
+              util.clearChanges(saved);
               //clear siblings so we can convert to JSON
               saved.siblings = null;
               objList.push(saved);
