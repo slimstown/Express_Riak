@@ -13,7 +13,7 @@ var s;
 
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
-var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.49', 8100);
+var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.11', 8100);
 
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
@@ -22,7 +22,12 @@ winston.log('info', 'Hello from Winston!');
 winston.info('This also works');
 
 //IT ALL STARTS HERE
-riak.ping(function(err, response){ 
+riak.ping(function(err, response){
+  if(err){
+    console.log(err);
+    return;
+  }
+  console.log('riak connected: ' + response);
   //util.generateUsers(0, 20, function(){});
   //util.generatePins(0, 200);
   //util.populateDb();
@@ -55,9 +60,9 @@ riak.ping(function(err, response){
   //util.follow('user4@gmail.com', 'user6@gmail.com');
   //util.follow('user4@gmail.com', 'user5@gmail.com');
   //util.unfollow('user4@gmail.com', 'user8@gmail.com');
-  //util.addComment(109, 'user0@gmail.com', 'This game was fun 9/10!!!');
-  //util.addComment(109, 'user8@gmail.com', 'This game was fun 8/10!!!');
-  //util.addComment(107, 'user3@gmail.com', 'This game was fun 7/10!!!');
+  //util.addComment(102, 'user9@gmail.com', 'This game was fun 9/10!!!');
+  //util.addComment(102, 'user8@gmail.com', 'This game was fun 8/10!!!');
+  //util.addComment(102, 'user7@gmail.com', 'This game was fun 7/10!!!');
   //util.addComment(114, 'user3@gmail.com', 'This game was fun 6/10!!!');
   //util.addComment(104, 'user5@gmail.com', 'This game was fun 5/10!!!');
   //util.addComment(104, 'user4@gmail.com', 'This game was fun 4/10!!!');
@@ -122,9 +127,11 @@ app.get('/getBuckets', function(req, res){
 });
 //get all objects in bucket, resolving conflicts along the way
 app.post('/getBucket', function(req, res){
+  console.log('getBucket');
   var objList = [];
   var keys = [];
   mr.listKeys(req.body.bucket, function(results){
+    console.log('listKeys');
     keys = results.data;
     if(keys.length > 0) next();
     else{
@@ -205,7 +212,6 @@ app.post('/postGamePin', function(req, res){
   };
   var R = http.request(options, function(response) {
     var ID = "";
-    
     // keep track of the data you receive
     response.on('data', function(data) {
       ID += data;
