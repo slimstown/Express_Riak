@@ -28,6 +28,23 @@ riak.ping(function(err, response){
     return;
   }
   console.log('riak connected: ' + response);
+  //util.getUser('user1@gmail.com');
+  //util.getUserbyIndex('user1');
+  /*util.createUser('user1@gmail.com', 'user1', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user2@gmail.com', 'user2', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user3@gmail.com', 'user3', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user4@gmail.com', 'user4', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user5@gmail.com', 'user5', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user6@gmail.com', 'user6', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user7@gmail.com', 'user7', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user8@gmail.com', 'user8', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user9@gmail.com', 'user9', ['Shooter', 'Action', 'Adventure']);
+  util.createUser('user10@gmail.com', 'user10', ['Shooter', 'Action', 'Adventure']);*/
+  //util.createGamepin(owner, category, description);
+  /*util.createGamepin('user1@gmail.com', 'user1', 'Shooter', 'This is a shooter game. POW!');
+  util.createGamepin('user2@gmail.com', 'user2', 'Action', 'This is an Action game. BAM!');
+  util.createGamepin('user2@gmail.com', 'user2', 'Adventure', 'This is a Adventure game. YAY!');
+  util.createGamepin('user2@gmail.com', 'user2', 'Fighting', 'This is a Fighting game. SMACK!');*/ 
   //util.generateUsers(0, 20, function(){});
   //util.generatePins(0, 200);
   //util.populateDb();
@@ -60,7 +77,7 @@ riak.ping(function(err, response){
   //util.follow('user4@gmail.com', 'user6@gmail.com');
   //util.follow('user4@gmail.com', 'user5@gmail.com');
   //util.unfollow('user4@gmail.com', 'user8@gmail.com');
-  //util.addComment(102, 'user9@gmail.com', 'This game was fun 9/10!!!');
+  //util.addComment(102, 'user9@sgmail.com', 'This game was fun 9/10!!!');
   //util.addComment(102, 'user8@gmail.com', 'This game was fun 8/10!!!');
   //util.addComment(102, 'user7@gmail.com', 'This game was fun 7/10!!!');
   //util.addComment(114, 'user3@gmail.com', 'This game was fun 6/10!!!');
@@ -132,7 +149,11 @@ app.post('/getBucket', function(req, res){
   var keys = [];
   mr.listKeys(req.body.bucket, function(results){
     console.log('listKeys');
-    keys = results.data;
+    for(k in results.data){
+      if(results.data[k].indexOf('-') === -1){
+        keys.push(results.data[k]);
+      }
+    }
     if(keys.length > 0) next();
     else{
       console.log('No '+ req.body.bucket +' in db.');

@@ -116,7 +116,6 @@ var user_resolve = exports.user_resolve = function(siblings){
                       likes: {add:[], remove:[], edit:[]},
                       followers: {add:[], remove:[]},
                       following: {add:[], remove:[]},
-                      friends: {add:[], remove:[]}
                     };
   
   //join sibling changes into net changes
@@ -129,8 +128,6 @@ var user_resolve = exports.user_resolve = function(siblings){
     net_changes.followers.remove = net_changes.followers.remove.concat(siblings[s].data.changes.followers.remove);
     net_changes.following.add = net_changes.following.add.concat(siblings[s].data.changes.following.add);
     net_changes.following.remove = net_changes.following.remove.concat(siblings[s].data.changes.following.remove);
-    net_changes.friends.add = net_changes.friends.add.concat(siblings[s].data.changes.friends.add);
-    net_changes.friends.remove = net_changes.friends.remove.concat(siblings[s].data.changes.friends.remove);
   }
   //resolve posts
   siblings[0].data.posts = siblings[0].data.posts.concat(net_changes.posts.add);
@@ -160,13 +157,6 @@ var user_resolve = exports.user_resolve = function(siblings){
     if(siblings[0].data.following.indexOf(net_changes.following.remove[p]) !== -1)
       siblings[0].data.following.splice(siblings[0].data.following.indexOf(net_changes.following.remove[p]), 1);
   }
-  //resolve friends
-  siblings[0].data.friends = siblings[0].data.friends.concat(net_changes.friends.add);
-  siblings[0].data.friends = arrNoDupe(siblings[0].data.friends);
-  for(var p in net_changes.friends.remove){
-    if(siblings[0].data.friends.indexOf(net_changes.friends.remove[p]) !== -1)
-      siblings[0].data.friends.splice(siblings[0].data.friends.indexOf(net_changes.friends.remove[p]), 1);
-  }
   return siblings[0];
 }
 
@@ -175,6 +165,175 @@ var categories = ['Casino', 'Casual', 'Shooter', 'Action',
                   'Simulation', 'Racing', 'Puzzle', 'Fighting',
                   'Social', 'Space', 'Horror', 'Strategy'];
 
+/* create an individual user, split into 3 parts: user, user-groups, user-activity
+ * user@gmail.com contains all basic user data
+ * user@gmail.com-groups contains a list of groups and posts that belong to them
+ * user@gmail.com-activity is a feed of events executed by this user recently
+ */
+var createUser = exports.createUser = function(key, uname, categories){
+  //create user
+  var usrId;
+  var exists;
+  console.log('createUser');
+  var data = {
+      email: key,
+      passHash: bcrypt.hashSync('pass'),
+      username: uname,
+      fbConnect: false,
+      favCat: categories,
+      profileImg: '',
+      gender: null,
+      bio: null,
+      dateJoined: getDate(),
+      posts: [],
+      likes: [],
+      followers: [],
+      following: [],
+      changes:{ posts: {add: [], remove: []},
+                likes: {add: [], remove: []},
+                followers: {add: [], remove: []},
+                following: {add: [], remove: []}
+              }
+  }
+  //create/overwrite user
+  var new_usr = app.riak.bucket('users').objects.new(key, data);
+  //index username so we can query via username instead of email
+  new_usr.addToIndex('username', uname);
+  app.riak.bucket('users').objects.get(key, user_resolve, function(err, obj) {
+    if(err){
+      //if user doesn't exist, create new user
+      if(err.status_code === 404){
+        new_usr.save(function(err, saved){
+          console.log('User ' + key + ' created');
+          next();
+        });
+      }
+      else{
+        console.log('Get user error: ' + err);
+      }
+    }
+    //if existing user found, fetch that user's vec clock and overwrite with new_usr
+    else if(obj){
+      exists = true;
+      new_usr.metadata.vclock = obj.metadata.vclock;
+      new_usr.save(function(err, saved){
+        console.log('User ' + key + ' found and overwritten');
+        next();
+      });
+    }
+  });
+  //create/overwrite user-groups
+  function next(){
+    //create one group per favCat
+    var groups = {};
+    var group_key = key + '-groups';
+    for(f in new_usr.data.favCat){
+       groups[new_usr.data.favCat[f]] = [];
+    }
+    var usr_groups = app.riak.bucket('users').objects.new(group_key, groups);
+    app.riak.bucket('users').objects.get(group_key, function(err, obj) {
+      if(err && err.status_code === 404){
+        usr_groups.save(function(err, data){
+          console.log('Groups object ' + group_key + ' created');
+          next2();
+        });
+      }
+      else if(obj){
+        usr_groups.metadata.vclock = obj.metadata.vclock;
+        usr_groups.save(function(err, data){
+          console.log('Groups object ' + group_key + ' found and overwritten');
+          next2();
+        });
+      }
+    });
+  }
+  //create/overwrite user-activity
+  function next2(){
+    var activity = {evtIds:[]};
+    var activity_key = key + '-activity';
+    var usr_activity = app.riak.bucket('users').objects.new(activity_key, activity);
+    app.riak.bucket('users').objects.get(activity_key, function(err, obj) {
+      if(err && err.status_code === 404){
+        usr_activity.save(function(err, saved){
+          console.log('Activity queue ' + activity_key + ' created');
+          console.log('createUser complete!');
+        });
+      }
+      else if(obj){
+        usr_activity.metadata.vclock = obj.metadata.vclock;
+        usr_activity.save(function(err, saved){
+          console.log('Groups object ' + activity_key + ' found and overwritten');
+          console.log('createUser complete!');
+        });
+      }
+    });
+  }
+}
+
+var getUser = exports.getUser = function(key){
+  app.riak.bucket('users').objects.get(key, function(err, obj){
+    if(err) return;
+    console.log(obj);
+  });
+}
+
+var getUserbyIndex = exports.getUserbyIndex = function(uname){
+  app.riak.bucket('users').search.twoi('user1', 'username', function(err, keys) {
+    if(err) return;
+    console.log(keys);
+    app.riak.bucket('users').objects.get(keys, user_resolve, function(err, obj){
+      if(err) return;
+      console.log(obj);
+    });
+  });
+}
+
+var createGamepin = exports.createGamepin = function(owner, uname, cat, desc){
+  var pinId;
+  generateId(function(id){
+    console.log(id);
+    pinID = id;
+    next();
+  });
+  function next(){
+    var value = {
+      posterId: owner,
+      posterName: uname,
+      likedBy: [],
+      repinVia: null,
+      category: cat,
+      content: null,
+      sourceUrl: null,
+      gameName: null,
+      publisher: null,
+      description: desc,
+      datePosted: null,
+      groupId: null,
+      returnAll: 'y',
+      comments: [],
+      changes:{ likedBy: {add:[], remove:[]},
+                comments:{add:[], remove:[] }
+              }
+    };
+    //create/overwrite gamepin
+    var gamepin = app.riak.bucket('gamepins').objects.new(pinID, value);
+    app.riak.bucket('gamepins').objects.get(pinID, user_resolve, function(err, obj) {
+      if(err && err.status_code === 404){
+        gamepin.save(function(err, saved){
+          console.log('Gamepin ' + pinID + ' created');
+          link(saved.data.posterId, saved.key);
+        });
+      }
+      else if(obj !== null){
+        gamepin.metadata.vclock = obj.metadata.vclock;
+        gamepin.save(function(err, saved){
+          console.log('Gamepin ' + pinID + 'overwritten!');
+          link(saved.data.posterId, saved.key);
+        });
+      }
+    });
+  }
+}
 //generate n users. Range s to n-1.
 var generateUsers = exports.generateUsers = function(s, n, callback){
   var userArray = [];
@@ -201,13 +360,11 @@ var generateUsers = exports.generateUsers = function(s, n, callback){
         likes:[],
         followers:[],
         following:[],
-        friends:[],
         recentActivity:[],
         changes:{ posts: {add:[], remove:[]},
                   likes: {add:[], remove:[]},
                   followers: {add:[], remove:[]},
                   following: {add:[], remove:[]},
-                  friends: {add:[], remove:[]}
                 }
       }
     );
@@ -657,11 +814,6 @@ var unfollow = exports.unfollow = function(sourceId, targetId){
   }
 }
 
-//TODO
-var friend = exports.friend = function(sourceId, targetId){
-  
-}
-
 //Create new gamepin or overwrite existing one. 
 var postPin = exports.postPin = function(pinId, pinData){
   //check if pin exists
@@ -887,9 +1039,10 @@ var deactivateUser = exports.deactivateUser = function(userId){
 var prev = '';
 var generateId = exports.generateId = function(callback){
   var ID_obj;
+  console.log('nodeflake request');
   //do GET request to nodeflake
   var options = {
-    host: '10.0.1.29',
+    host: '10.0.1.14',
     port: 1337,
     path: '/',
     method: 'GET',
@@ -912,15 +1065,21 @@ var generateId = exports.generateId = function(callback){
       next();
     });
   });
+  R.on('error', function(e){
+    console.log('error');
+    console.log(e.message);
+  });
   R.end();
   function next(){
-    callback(ID_obj.id);
+    //invert values allowing us to sort from new (low #) to old (high #)
+    var val = "999999999999999999" - ID_obj.id;
+    callback(val);
   }
 }
 
 //Creates new comment obj. 2 way link from comment to gamepin.
 //TODO: Link to user via 'recent activity'
-var addComment = exports.addComment = function(pinId, posterId, text){
+var addComment = exports.addComment = function(pinId, posterId, poster, text){
   var commentId;
   console.log('addComment()');
   //validations
@@ -937,7 +1096,8 @@ var addComment = exports.addComment = function(pinId, posterId, text){
     next();
   });
   function next(){
-    var cmt = app.riak.bucket('comments').objects.new(commentId, {pin: pinId, poster: posterId, content: text});
+    var cmt = app.riak.bucket('comments').objects.new(commentId,
+                {pin: pinId, poster: posterId, posterName: poster, content: text});
     cmt.save(function(err, saved_cmt){
       var pin = app.riak.bucket('gamepins').objects.new(pinId);
       pin.fetch(pin_resolve, function(err, obj){

@@ -36,9 +36,17 @@ getBucket = function(bucketName){
             text += '<tr>';
             //TODO FINISH testing / filling this in
             if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
-            if(data[obj].data.name) text += '<td>'+ data[obj].data.name +'</td>'; else text += '<td></td>';
+            if(data[obj].data.username) text += '<td>'+ data[obj].data.username +'</td>'; else text += '<td></td>';
             if(data[obj].data.fbConnect) text += '<td>'+ data[obj].data.fbConnect +'</td>'; else text += '<td></td>';
-            if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
+            //if(data[obj].data.favCat) text += '<td>'+ data[obj].data.favCat +'</td>'; else text += '<td></td>';
+            if(data[obj].data.favCat.length > 0){
+              text += '<td><select>';
+              for(c in data[obj].data.favCat){
+                text += '<option>' + data[obj].data.favCat[c] + '</option>';
+              }
+              text += '</select></td>';
+            }
+            else text += '<td></td>';
             if(data[obj].data.posts.length > 0){
               text += '<td><select>';
               for(p in data[obj].data.posts){
@@ -50,7 +58,6 @@ getBucket = function(bucketName){
             if(data[obj].data.likes.length > 0) text += '<td>'+ data[obj].data.likes + ' ('+ data[obj].data.likes.length+ ')' +'</td>'; else text += '<td></td>';
             if(data[obj].data.followers.length > 0) text += '<td>'+ data[obj].data.followers + '</td>'; else text += '<td></td>';
             if(data[obj].data.following.length > 0) text += '<td>'+ data[obj].data.following + '</td>'; else text += '<td></td>';
-            if(data[obj].data.friends.length > 0) text += '<td>'+ data[obj].data.friends + '</td>'; else text += '<td></td>';
             text += '</tr>';
           }
           else if(bucketName === 'gamepins'){
@@ -85,8 +92,8 @@ getBucket = function(bucketName){
       $('#object_table').empty();
       switch(bucketName){
         case 'users':
-          $('#object_table').append('<tr><th>Email</th><th>Name</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th>' +
-                                    '<th>Followers</th><th>Following</th><th>Friends</th><tr>');
+          $('#object_table').append('<tr><th>Email</th><th>Username</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th>' +
+                                    '<th>Followers</th><th>Following</th><tr>');
           break;
         case 'gamepins':
           $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Comments</th><tr>');
