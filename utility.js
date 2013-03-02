@@ -257,6 +257,7 @@ var createUser = exports.createUser = function(key, uname, categories){
         usr_activity.save(function(err, saved){
           console.log('Activity queue ' + activity_key + ' created');
           console.log('createUser complete!');
+          next3();
         });
       }
       else if(obj){
@@ -264,8 +265,17 @@ var createUser = exports.createUser = function(key, uname, categories){
         usr_activity.save(function(err, saved){
           console.log('Groups object ' + activity_key + ' found and overwritten');
           console.log('createUser complete!');
+          next3();
         });
       }
+    });
+  }
+  //store email -> username into table for easy reference
+  function next3(){
+    var usr_ref = app.riak.bucket('userReference').objects.new(key, {username: uname});
+    usr_ref.save(function(err, obj){
+      console.log('user Reference saved!');
+      console.log(obj);
     });
   }
 }
@@ -1042,7 +1052,7 @@ var generateId = exports.generateId = function(callback){
   console.log('nodeflake request');
   //do GET request to nodeflake
   var options = {
-    host: '10.0.1.14',
+    host: 'dev.quyay.com',
     port: 1337,
     path: '/',
     method: 'GET',

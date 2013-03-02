@@ -13,7 +13,7 @@ var s;
 
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
-var riak = exports.riak = require('nodiak').getClient('http', '10.0.1.11', 8100);
+var riak = exports.riak = require('nodiak').getClient('http', 'dev.quyay.com', 8100);
 
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
@@ -30,21 +30,27 @@ riak.ping(function(err, response){
   console.log('riak connected: ' + response);
   //util.getUser('user1@gmail.com');
   //util.getUserbyIndex('user1');
-  /*util.createUser('user1@gmail.com', 'user1', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user2@gmail.com', 'user2', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user3@gmail.com', 'user3', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user4@gmail.com', 'user4', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user5@gmail.com', 'user5', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user6@gmail.com', 'user6', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user7@gmail.com', 'user7', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user8@gmail.com', 'user8', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user9@gmail.com', 'user9', ['Shooter', 'Action', 'Adventure']);
-  util.createUser('user10@gmail.com', 'user10', ['Shooter', 'Action', 'Adventure']);*/
+  //util.createUser('user1@gmail.com', 'user1', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user2@gmail.com', 'user2', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user3@gmail.com', 'user3', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user4@gmail.com', 'user4', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user5@gmail.com', 'user5', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user6@gmail.com', 'user6', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user7@gmail.com', 'user7', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user8@gmail.com', 'user8', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user9@gmail.com', 'user9', ['Shooter', 'Action', 'Adventure']);
+  //util.createUser('user10@gmail.com', 'user10', ['Shooter', 'Action', 'Adventure']);*/
   //util.createGamepin(owner, category, description);
-  /*util.createGamepin('user1@gmail.com', 'user1', 'Shooter', 'This is a shooter game. POW!');
+  /*util.createGamepin('user1@gmail.com', 'user1', 'Shooter', 'This is a shooter game. BANG!');
   util.createGamepin('user2@gmail.com', 'user2', 'Action', 'This is an Action game. BAM!');
-  util.createGamepin('user2@gmail.com', 'user2', 'Adventure', 'This is a Adventure game. YAY!');
-  util.createGamepin('user2@gmail.com', 'user2', 'Fighting', 'This is a Fighting game. SMACK!');*/ 
+  util.createGamepin('user3@gmail.com', 'user3', 'Adventure', 'This is a Adventure game. YAY!');
+  util.createGamepin('user4@gmail.com', 'user4', 'Casino', 'This is a Casino game. CHA-CHING!');
+  util.createGamepin('user5@gmail.com', 'user5', 'Casual', 'This is a Casual game. MEH!');*/
+  //util.createGamepin('user6@gmail.com', 'user6', 'Simulation', 'This is an Simulation game. GOD-MODE!');
+  //util.createGamepin('user7@gmail.com', 'user7', 'Racing', 'This is a Racing game. SCREECH!');
+  //util.createGamepin('user8@gmail.com', 'user8', 'Puzzle', 'This is a Puzzle game. THINK!');
+  //util.createGamepin('user9@gmail.com', 'user9', 'Space', 'This is a Space game. ZAP!');
+  //util.createGamepin('user10@gmail.com', 'user10', 'Strategy', 'This is an Strategy game. STRATEGERY!');
   //util.generateUsers(0, 20, function(){});
   //util.generatePins(0, 200);
   //util.populateDb();
@@ -216,6 +222,53 @@ app.post('/getBucket', function(req, res){
       return res.json(objList);
     }
   }
+});
+
+app.post('/getGroups', function(req, res){
+  console.log(req.body);
+  riak.bucket('users').objects.get(req.body.key+'-groups', function(err, obj){
+    if(err && err.status_code === 404){
+      console.log('not found');
+      return res.json({error: "Error: user does not have groups list"});
+    }
+    console.log(obj);
+    return res.json({groups: obj.data});
+  });
+});
+
+app.post('/getActivity', function(req, res){
+  console.log(req.body);
+  riak.bucket('users').objects.get(req.body.key+'-activity', function(err, obj){
+    if(err && err.status_code === 404){
+      console.log('not found');
+      return res.json({error: "Error: user does not have an activity list"});
+    }
+    return res.json({activity: obj.data});
+  });
+});
+
+app.post('/getIndex', function(req, res){
+  console.log(req.body);
+  riak.bucket('users').objects.get(req.body.key, function(err, obj){
+    return res.json({ username: obj.getIndex('username') });
+  });
+});
+
+app.post('/deleteUser', function(req, res){
+  console.log(req.body);
+  riak.bucket('users').object.get(req.body.key, function(err, obj){
+    obj.delete(function(err, deleted){
+      console.log(req.body.key);
+      return res.json({deleted: req.body.key});
+    });
+  });
+  /*riak.bucket('users').object.delete(req.body.key, function(err, obj){
+    if(err && err.status_code === 404){
+      console.log('not found');
+      return res.json({error: "Error: user does not have an activity list"});
+    }
+    return res.json({deleted: obj.data});
+  });*/
 });
 
 //add gamepin

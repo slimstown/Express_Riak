@@ -33,3 +33,6 @@
 .hidden{
   display:none;
 }
+#object_table{
+  min-width:1000px;
+}

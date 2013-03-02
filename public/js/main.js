@@ -37,6 +37,58 @@ $(document).ready(function(e){
     $('#add_'+obj).removeClass('hidden').addClass('visible');
   });
   
+  //view user groups
+  $(document).on('click', '.user_groups', function(e){
+    console.log($(this).parent().parent().find('.id').text());
+    $.ajax({
+      type: 'post',
+      url: '/getGroups',
+      data: 'key=' + $(this).parent().parent().find('.id').text(),
+      success: function(data){
+        console.log(data.groups);
+        alert(JSON.stringify(data, null, 4));
+      }
+    });
+  });
+  //view user activity
+  $(document).on('click', '.user_activity', function(e){
+    console.log($(this).parent().parent().find('.id').text());
+    $.ajax({
+      type: 'post',
+      url: '/getActivity',
+      data: 'key=' + $(this).parent().parent().find('.id').text(),
+      success: function(data){
+        console.log(data.activity);
+        alert(JSON.stringify(data, null, 4));
+      }
+    });
+  });
+  //delete user and view success confirmation
+  $(document).on('click', '.user_delete', function(e){
+    console.log($(this).parent().parent().find('.id').text());
+    $.ajax({
+      type: 'post',
+      url: '/deleteUser',
+      data: 'key=' + $(this).parent().parent().find('.id').text(),
+      success: function(data){
+        alert("deleted: " + JSON.stringify(data, null, 4));
+      }
+    });
+  });
+  //get 2i indexes
+  $(document).on('click', '.user_index', function(e){
+    console.log($(this).parent().parent().find('.id').text());
+    $.ajax({
+      type: 'post',
+      url: '/getIndex',
+      data: 'key=' + $(this).parent().parent().find('.id').text(),
+      success: function(data){
+        alert("index: " + JSON.stringify(data, null, 4));
+      }
+    });
+  });
+  
+  
   //search via category
   $(document).on('submit', '#query_form', function(e){
     var category = $('#query_form select[name=category] option').filter(':selected').val();
