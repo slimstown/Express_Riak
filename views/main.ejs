@@ -4,13 +4,28 @@
   <script src="/js/jquery-1.8.1.min.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/main.js"></script>
+  <script src="/js/jquery.form.js"></script>
+  <script src="/js/bootstrap-fileupload.js"></script>
   <link href="/css/main.css" rel="stylesheet">
+  <link href="/css/bootstrap-fileupload.css" rel="stylesheet">
+  <link href="/css/bootstrap.css" rel="stylesheet">
+  <style>
+    .thumb {
+      height: 75px;
+      border: 1px solid #000;
+      margin: 10px 5px 0 0;
+    }
+  </style>
 </head>
 <body>
+  <div id="img_container">
+  </div>
   <button id="toggle_options" >Show Options</button>
   <br />
-  <div id="left" class="hidden">
-    <p> Search GamePin via category </p>
+  <div id="left">
+    <!--<p> Search GamePin via category </p>
+    <button class="save_img">Save Image</button>
+    <button class="fetch_img">Get Image</button>
     <form id="query_form">
       <select name="category">
         <option value="All">All</option>
@@ -44,13 +59,32 @@
       <input type="submit" value="query">
       <br />
     </form>
-
+    <br />
+    <hr>
+    <br />-->
+    
+    <!-- Functionality************************************************* -->
+    <button id="email_btn" type="button">Send Email</button>
+    <p>Post Image</p>
+    <form id="uploadForm" action="/postImage" method="post" enctype="multipart/form-data">
+      <!--<input id="fileInput" type="file" name="image"></input>-->
+      <div class="fileupload fileupload-new" data-provides="fileupload">
+        <div class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
+        <div>
+        <span class="btn btn-file"><span class="fileupload-new">Select image</span><span class="fileupload-exists">Change</span><input id="fileInput" name="image" type="file" /></span>
+        <a href="#" class="btn fileupload-exists" data-dismiss="fileupload">Remove</a>
+        </div>
+      </div>
+      <input id="fileSubmit" type="submit">
+      <a id="cdnUrl" >View Image on Rackspace</a>
+    </form>
   </div>
   <div id="right_1">
     <div class="buckets">Buckets:
       <span>
         <button class="users selected">users</button>
         <button class="userReference">userReference</button>
+        <button class="pendingUsers">pendingUsers</button>
         <button class="gamepins">gamepins</button>
         <button class="comments">comments</button>
       </span>
@@ -58,6 +92,10 @@
   </div>
   <div id="right_2">
     <div class="objects">Objects:<br/>
+      <div id="pending_options" class="hidden">
+        <span>Auto-Activate Pending Users</span><button>Off</button> &nbsp;
+        <span>Activate all Pending Users</span><button>Activate!</button>
+      </div>
       <table id="object_table" border="1">
         <tr>
           <th>Email</th><th>Name</th><th>Hash</th><th>fbConnect</th><th>FavCat</th>
@@ -66,5 +104,57 @@
     </div>
     <div>Keys:<table border="1" class="keys"></table></pdiv>
   </div>
+  <img src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub//ge8WSLf/rhf/3kdbW1mxsbP//mf///yH5BAAAAAAALAAAAAAQAA4AAARe8L1Ekyky67QZ1hLnjM5UUde0ECwLJoExKcppV0aCcGCmTIHEIUEqjgaORCMxIC6e0CcguWw6aFjsVMkkIr7g77ZKPJjPZqIyd7sJAgVGoEGv2xsBxqNgYPj/gAwXEQA7">
+  
+  <script type="text/javascript">
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+      // Great success! All the File APIs are supported.
+      console.log('htlm5 files supported!');
+    } else {
+      alert('The File APIs are not fully supported in this browser.');
+    }
+    
+    function handleFileSelect(evt) {
+      var files = evt.target.files; // FileList object
+      
+      // files is a FileList of File objects. List some properties.
+      for (var i = 0, f; f = files[i]; i++) {
+        
+        // If not image, don't process
+        if (!f.type.match('image.*')) {
+          continue;
+        }
+        
+        var reader = new FileReader();
+        
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+          console.log(theFile);
+          return function(e) {
+            console.log(e.target);
+            // Render thumbnail.
+            var span = document.createElement('span');
+            span.innerHTML = ['<img class="thumb" src="', e.target.result,
+                              '" title="', escape(theFile.name), ' width="100" "/>'].join('');
+            document.getElementById('list').insertBefore(span, null);
+            //send image data to server
+            $.ajax({
+              type: 'get',
+              url: '/sendImage',
+            });
+          };
+        })(f);
+        
+        //Read in the image file as a data URL.
+        reader.readAsDataURL(f);
+        //reader.readAsBinaryString(f);
+        //reader.readAsText(f);
+        //reader.readAsArrayBuffer(f);
+      }
+    }
+
+    //document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    
+  </script>
 </body>
 </html>

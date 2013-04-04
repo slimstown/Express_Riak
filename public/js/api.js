@@ -61,6 +61,24 @@ getBucket = function(bucketName){
             text += '<td><button class="user_delete">delete</button><button class="user_index">index</button></td>';
             text += '</tr>';
           }
+          else if(bucketName === 'userReference'){
+            text += '<tr>';
+            if(data[obj].key) text += '<td>' + data[obj].key + '</td>'; else text += '<td></td>';
+            if(data[obj].data.username) text += '<td>' + data[obj].data.username + '</td>'; else text += '<td></td>';
+            if(data[obj].data.imgUrl) text += '<td><img src="' + data[obj].data.imgUrl + '" height="22" width="22" /></td>'; else text += '<td></td>';
+            text += '</tr>';
+            console.log(data[obj]);
+            console.log('userReference');
+          }
+          else if(bucketName === 'pendingUsers'){
+            text += '<tr>';
+            if(data[obj].key) text += '<td class="id">' + data[obj].key + '</td>'; else text += '<td></td>';
+            if(data[obj].data.email) text += '<td>' + data[obj].data.email + '</td>'; else text += '<td></td>';
+            if(data[obj].data.userName) text += '<td class="name">' + data[obj].data.userName + '</td>'; else text += '<td></td>';
+            if(data[obj].data.company) text += '<td>' + data[obj].data.company + '</td>'; else text += '<td></td>';
+            text += '<td><button class="activate_pending" >Activate</button><button class="reject_pending">Reject</button></td>';
+            text += '</tr>';
+          }
           else if(bucketName === 'gamepins'){
             text += '<tr>';
             if(data[obj].key) text += '<td><a class="id" href="#">'+ data[obj].key +'</a></td>'; else text += '<td></td>';
@@ -88,14 +106,6 @@ getBucket = function(bucketName){
             if(data[obj].data.content) text += '<td>'+ data[obj].data.content +'</td>'; else text += '<td></td>';
             text += '</tr>';
           }
-          else if(bucketName === 'userReference'){
-            text += '<tr>';
-            if(data[obj].key) text += '<td>' + data[obj].key + '</td>'; else text += '<td></td>';
-            if(data[obj].data.username) text += '<td>' + data[obj].data.username + '</td>'; else text += '<td></td>';
-            text += '</tr>';
-            console.log(data[obj]);
-            console.log('userReference');
-          }
         }
       }
       $('#object_table').empty();
@@ -104,15 +114,19 @@ getBucket = function(bucketName){
           $('#object_table').append('<tr><th>Email</th><th>Username</th><th>fbConnect</th><th>FavCat</th><th>Posts</th><th>Likes</th>' +
                                     '<th>Followers</th><th>Following</th><th>GetData</th><th>Actions</th><tr>');
           break;
+        case 'userReference':
+          $('#object_table').append('<tr><th>Key</th><th>Username</th><th>imgUrl</th><tr>');
+          break;
+        case 'pendingUsers':
+          $('#object_table').append('<tr><th>Key</th><th>email</th><th>userName</th><th>company</th><th>options</th><tr>');
+          break;
         case 'gamepins':
           $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Comments</th><tr>');
           break;
         case 'comments':
           $('#object_table').append('<tr><th>ID</th><th>Pin</th><th>Poster</th><th>Content</th><tr>');
           break;
-        case 'userReference':
-          $('#object_table').append('<tr><th>Key</th><th>Username</th><tr>');
-          break;
+        
       }
       $('#object_table').append(text);
     },

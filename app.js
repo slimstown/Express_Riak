@@ -2,10 +2,29 @@ var express = require('express');
 var http = require('http');
 var winston = require('winston');
 var fs = require('fs');
-//var random = require('secure_random');
 var mr = require('./mapreduce');
 var util = require('./utility');
 var bcrypt = require('bcrypt-nodejs');
+var request = require('request');
+var rackit = require('rackit');
+var config = require('./config');
+var mandrill = exports.mandrill = require('node-mandrill')('rRK6Fs7T1NKpMbJZKxpJfA');
+
+//create rackspace image, define name of container we will push images to
+rackit.init({
+  user: 'happyspace',
+  key: '1b5a100b899c44633dbda1aa93ea6237',
+  prefix: 'test',
+  tempURLKey : null, // A secret for generating temporary URLs
+  useSNET : false,
+  useCDN : true,
+  useSSL : true, // Specifies whether to use SSL (https) for CDN links
+  verbose : false, // If set to true, log messages will be generated
+  logger : console.log // Function to receive log messages
+}, function(err){
+  if(err) console.log('error:' + err);
+});
+
 var app = express();
 
 //global vars
@@ -13,7 +32,8 @@ var s;
 
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
-var riak = exports.riak = require('nodiak').getClient('http', 'dev.quyay.com', 8100);
+var riak = exports.riak = require('nodiak').getClient('http', 'riak3.quyay.com', 8098);
+//var riak = exports.riak = require('nodiak').getClient('http', config.db_host, 8100);
 
 winston.add(winston.transports.File, { filename: 'web.log'});
 winston.remove(winston.transports.Console);
@@ -28,36 +48,28 @@ riak.ping(function(err, response){
     return;
   }
   console.log('riak connected: ' + response);
+  /*riak.bucket('user').getProps(function(err, props){
+    console.log(props);
+  });*/
+  /*riak.bucket('gamepins').getProps(function(err, props){
+    console.log(props);
+  });*/
+  //util.clearTony();
   //util.getUser('user1@gmail.com');
   //util.getUserbyIndex('user1');
   //util.createUser('user1@gmail.com', 'user1', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user2@gmail.com', 'user2', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user3@gmail.com', 'user3', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user4@gmail.com', 'user4', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user5@gmail.com', 'user5', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user6@gmail.com', 'user6', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user7@gmail.com', 'user7', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user8@gmail.com', 'user8', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user9@gmail.com', 'user9', ['Shooter', 'Action', 'Adventure']);
-  //util.createUser('user10@gmail.com', 'user10', ['Shooter', 'Action', 'Adventure']);*/
   //util.createGamepin(owner, category, description);
-  /*util.createGamepin('user1@gmail.com', 'user1', 'Shooter', 'This is a shooter game. BANG!');
-  util.createGamepin('user2@gmail.com', 'user2', 'Action', 'This is an Action game. BAM!');
-  util.createGamepin('user3@gmail.com', 'user3', 'Adventure', 'This is a Adventure game. YAY!');
-  util.createGamepin('user4@gmail.com', 'user4', 'Casino', 'This is a Casino game. CHA-CHING!');
-  util.createGamepin('user5@gmail.com', 'user5', 'Casual', 'This is a Casual game. MEH!');*/
-  //util.createGamepin('user6@gmail.com', 'user6', 'Simulation', 'This is an Simulation game. GOD-MODE!');
-  //util.createGamepin('user7@gmail.com', 'user7', 'Racing', 'This is a Racing game. SCREECH!');
-  //util.createGamepin('user8@gmail.com', 'user8', 'Puzzle', 'This is a Puzzle game. THINK!');
-  //util.createGamepin('user9@gmail.com', 'user9', 'Space', 'This is a Space game. ZAP!');
-  //util.createGamepin('user10@gmail.com', 'user10', 'Strategy', 'This is an Strategy game. STRATEGERY!');
+  //util.createGamepin('user1@gmail.com', 'user1', 'Shooter', 'This is a shooter game. BANG!');
   //util.generateUsers(0, 20, function(){});
   //util.generatePins(0, 200);
   //util.populateDb();
+  //util.clearPosts('amar.gavhane@gmail.com');
   //util.wipeDb();
-  //mr.deleteObjects('gamepins');
-  //mr.deleteObjects('users');
-  //mr.deleteObjects('comments');
+  /*mr.deleteObjects('gamepins');
+  mr.deleteObjects('users');
+  mr.deleteObjects('comments');
+  mr.deleteObjects('userReference');
+  mr.deleteObjects('pendingUsers');*/
   //util.deactivateUser('user3@gmail.com');
   /*util.postPin(251, { posterId: 'user1@gmail.com',
           likedBy: [],
@@ -78,16 +90,8 @@ riak.ping(function(err, response){
   //util.like('user3@gmail.com', 108);
   //util.unlike('user7@gmail.com', 102);
   //util.follow('user4@gmail.com', 'user9@gmail.com');
-  //util.follow('user4@gmail.com', 'user8@gmail.com');
-  //util.follow('user4@gmail.com', 'user7@gmail.com');
-  //util.follow('user4@gmail.com', 'user6@gmail.com');
-  //util.follow('user4@gmail.com', 'user5@gmail.com');
   //util.unfollow('user4@gmail.com', 'user8@gmail.com');
   //util.addComment(102, 'user9@sgmail.com', 'This game was fun 9/10!!!');
-  //util.addComment(102, 'user8@gmail.com', 'This game was fun 8/10!!!');
-  //util.addComment(102, 'user7@gmail.com', 'This game was fun 7/10!!!');
-  //util.addComment(114, 'user3@gmail.com', 'This game was fun 6/10!!!');
-  //util.addComment(104, 'user5@gmail.com', 'This game was fun 5/10!!!');
   //util.addComment(104, 'user4@gmail.com', 'This game was fun 4/10!!!');
   //util.deleteComment('200117125921247230');
 });
@@ -110,6 +114,71 @@ app.configure(function(){
 //serve main page
 app.get('/', function(req, res){
   res.render('main');
+});
+
+app.get('/auth', function(req, res){
+  var options = {
+    host: 'identity.api.rackspacecloud.com',
+    port: '80',
+    path: '/v1.0',
+    method: 'GET',
+    headers: {
+      'X-Auth-User': 'happyspace',
+      'X-Auth-Key': '1b5a100b899c44633dbda1aa93ea6237'
+    }
+  };
+  var R = http.request(options, function(response) {
+    var token = null;
+    console.log('frackspace');
+    response.on('data', function(data) {
+      token += data;
+      console.log('data?');
+    });
+    response.on('end', function(thing) {
+      console.log(response.res);
+      //console.log(response);
+      console.log(token);
+      console.log('end?');
+    });
+  });
+  R.end();
+});
+
+/*app.post('/testAjax', function(req, res){
+  console.log('testAJAX');
+  console.log(req.body);
+  return res.json({ response: 'Test Successful!' });
+});*/
+
+app.post('/postImage', function(req, res){
+  console.log(req.files.image);
+  console.log(req.files.image.path);
+  console.log(req.files.image.size);
+  console.log(req.files.image.type);
+  fs.rename(req.files.image.path, req.files.image.path)
+  rackit.add(req.files.image.path, {type: req.files.image.type}, function(err, cloudpath){
+    if(err) return;
+    console.log('file added');
+    console.log(cloudpath);
+    var viewUrl = rackit.getURI(cloudpath);
+    console.log(rackit.getURI(cloudpath));
+    return res.json({ url: viewUrl });
+  });
+});
+
+app.post('/imgUpload', function(req, res){
+  console.log(req.files.image);
+  console.log(req.files.image.path);
+  console.log(req.files.image.size);
+});
+
+app.post('urlUpload', function(req, res){
+  console.log('urlUpload');
+  rackit.add(imageUrl, function(err, cloudpath){
+    if(err) return;
+    console.log('file added!');
+    console.log('see it here:', rackit.getURI(cloudpath));
+  });
 });
 
 /* AJAX API */
@@ -154,6 +223,7 @@ app.post('/getBucket', function(req, res){
   var objList = [];
   var keys = [];
   mr.listKeys(req.body.bucket, function(results){
+    console.log(results.data);
     console.log('listKeys');
     for(k in results.data){
       if(results.data[k].indexOf('-') === -1){
@@ -226,10 +296,18 @@ app.post('/getBucket', function(req, res){
 
 app.post('/getGroups', function(req, res){
   console.log(req.body);
+  console.log(req.body.key+'-groups');
   riak.bucket('users').objects.get(req.body.key+'-groups', function(err, obj){
     if(err && err.status_code === 404){
-      console.log('not found');
-      return res.json({error: "Error: user does not have groups list"});
+      console.log(err);
+      console.log('not found, creating groups entry now');
+      var group_obj = riak.bucket('users').objects.new(err.data, {"Action & Adventure":[]});
+      group_obj.save(function(err, saved){
+        if(err) return({ error: "Could not create group entry" });
+        console.log(saved.data);
+        //else return res.json({ groups: saved.data })
+      });
+      //return res.json({error: "Error: user does not have groups list"});
     }
     console.log(obj);
     return res.json({groups: obj.data});
@@ -254,9 +332,169 @@ app.post('/getIndex', function(req, res){
   });
 });
 
+app.post('/deletePending', function(req, res){
+  riak.bucket('pendingUsers').object.get(req.body.key, function(err, obj){
+    if(err) return res.json({ err: "not found"});
+    obj.delete(function(err, deleted){
+      if(err) return res.json({ error: "Delete Pending User failed" });
+      console.log("Pending User " + req.body.key + " Deleted");
+      return res.json({deleted: req.body.key});
+    });
+  });
+});
+
+//resend confirmation email
+/*app.post('/resendEmail', function(req, res){
+  console.log(req.body);
+  mandrill('messages/send', {
+      message: {
+        to: [{ email: req.body.email }],
+        from_email: 'info@quyay.com',
+        subject: "Quyay Alpha Access",
+        text: "Congratulations, You have been granted access to Quyay Alpha! \n\n" +
+        "You can sign in using this email and the temporary password shown below:\n\n" +
+        "Temporary Password: " + req.body.pass + " \n\n" +
+        "Go to http://www.quyay.com/ and scroll to the bottom of the page to find the 'Sign In' area. \n\n" +
+        "Once you have signed in, you can change your password.  " +
+        "Click the profile tab in the top right, and select 'Settings'.\n" +
+        "From here, type your new password into the 'Change Password' and 'Confirm Changes' input areas, and click 'Save Settings'.\n\n" +
+        "Hope to see you soon!\n\n" +
+        "-Team Quyay"
+      }
+    }, function(err, response){
+      if(err){
+        console.log(JSON.stringify(err));
+        return res.json({ error: err });
+      }
+      else{
+        console.log(response);
+        return res.json({ email: req.body.email });
+      }
+    });
+  
+});*/
+
+//activate a pendingUser, making him a real Quyay user
+//generated tmp password, create user, send email, delete pending user
+//pending user's params are passed in
+app.post('/activatePending', function(req, res){
+  console.log(req.body);
+  var new_user;
+  var tmp_pass;
+  var user_key = req.body.email;
+  var user_data = {
+                email: req.body.email,
+                passHash: null,
+                username: req.body.name,
+                fbConnect: false,
+                favCat: [],
+                profileImg: null,
+                gender: null,
+                bio:null,
+                dateJoined: util.getDate(),
+                posts:[],
+                likes:[],
+                followers:[],
+                following:[],
+                changes:{
+                  posts: {add:[], remove:[]},
+                  likes: {add:[], remove:[]},
+                  followers: {add:[], remove:[]},
+                  following: {add:[], remove:[]},
+                }
+    };
+  
+  //generate tmp password from nodeflake
+  util.generateId(function(id){
+    temp_pass = id;
+    console.log('NODEFLAKE ID, TAKE NOTE:')
+    console.log(id);
+    user_data.passHash = bcrypt.hashSync(id);
+    next();
+  });
+  //create user (4 step process)
+  //create user object
+  function next(){
+    new_user = riak.bucket('users').objects.new(user_key, user_data);
+    new_user.addToIndex('username', user_data.username);
+    new_user.save(function(err, saved){
+      if(err) return res.json({ error: "create pending error: " + err });
+      next2();
+    });
+  }
+  //create user-groups
+  function next2(){
+    var group_data = {};
+    var group_key = user_key + '-groups';
+    new_group = riak.bucket('users').objects.new(group_key, group_data);
+    new_group.save(function(err, saved){
+      if(err) return res.json({ error: "create groups error: " + err });
+      next3();
+    });
+  }
+  //create user-activity
+  function next3(){
+    var activity_data = {evtIds:[]};
+    var activity_key = user_key + '-activity';
+    var new_activity = riak.bucket('users').objects.new(activity_key, activity_data);
+    new_activity.save(function(err, saved){
+      if(err) return res.json({ error: "create activity error: " + err });
+      next4();
+    });
+  }
+  //create user quick-reference
+  function next4(){
+    var usr_ref = riak.bucket('userReference').objects.new(user_key, {username: user_data.username,
+                                                                      imgUrl: null});
+    usr_ref.save(function(err, saved){
+      if(err) return res.json({ error: "create activity error: " + err });
+      next5();
+    });
+  }
+  //send email
+  function next5(){
+    mandrill('messages/send', {
+      message: {
+        to: [{email: user_key}],
+        from_email: 'info@quyay.com',
+        subject: "Quyay Alpha Access",
+        text: "Congratulations, You have been granted access to Quyay Alpha! \n\n" +
+        "You can sign in using this email and the temporary password shown below:\n\n" +
+        "Temporary Password: " + temp_pass + " \n\n" +
+        "Go to http://www.quyay.com/ and scroll to the bottom of the page to find the 'Sign In' area. \n\n" +
+        "Once you have signed in, you can change your password.  " +
+        "Click the profile tab in the top right, and select 'Settings'.\n" +
+        "From here, type your new password into the 'Change Password' and 'Confirm Changes' input areas, and click 'Save Settings'.\n\n" +
+        "Hope to see you soon!\n\n" +
+        "-Team Quyay"
+      }
+    }, function(err, response){
+      if(err){
+        console.log(JSON.stringify(err));
+        return res.json({error: err});
+      }
+      else{
+        console.log(response);
+        next6();
+      }
+    });
+  }
+  //delete pending user
+  function next6(){
+    //delete pending user
+    riak.bucket('pendingUsers').object.get(user_key, function(err, obj){
+      if(err) return res.json({error: "delete pendingUser Error: " + err});
+      obj.delete(function(err, deleted){
+        return res.json({ success: true });
+      });
+    });
+  }
+});
+
 app.post('/deleteUser', function(req, res){
   console.log(req.body);
   riak.bucket('users').object.get(req.body.key, function(err, obj){
+    if(err) return res.json({ err: "not found"});
     obj.delete(function(err, deleted){
       console.log(req.body.key);
       return res.json({deleted: req.body.key});
@@ -347,6 +585,6 @@ app.post('/textSearch', function(req, res){
   });
 });
 
-app.listen(3002, function(){
+app.listen(3003, function(){
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });

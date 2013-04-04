@@ -1,8 +1,10 @@
 var app = require('./app');
 var http = require('http');
+var fs = require('fs');
 var random = require('secure_random');
 var bcrypt = require('bcrypt-nodejs');
 var mr = require('./mapreduce');
+var config = require('./config');
 
 //Takes in array and returns new one with duplicate entries removed
 function arrNoDupe(a) {
@@ -161,9 +163,67 @@ var user_resolve = exports.user_resolve = function(siblings){
 }
 
 //12 categories
-var categories = ['Casino', 'Casual', 'Shooter', 'Action',
-                  'Simulation', 'Racing', 'Puzzle', 'Fighting',
-                  'Social', 'Space', 'Horror', 'Strategy'];
+var categories = ['Action & Adventure', 'Arcade', 'Board & Card', 'Casino & Gambling',
+                  'Educational', 'Family & Kids', 'Music & Rhythm', 'Puzzle',
+                  'Racing', 'Role Playing', 'Simulation', 'Sports', 'Strategy', 'Trivia & Word'];
+
+//save image
+
+var clearPosts = exports.clearPosts = function(user_key){
+  app.riak.bucket('users').objects.get(user_key, user_resolve, function(err, obj){
+    if(err) console.log(err);
+    obj.data.posts = [];
+    obj.save(function(err, saved){
+      if(err) console.log(err);
+      console.log("Post references cleared from: " + saved.key);
+    });
+  });
+}
+
+var clearTony = exports.clearTony = function(){
+  app.riak.bucket('users').objects.get('dtonys@gmail.com-groups', function(err, obj){
+    if(err) return res.json({error: "fetch groups error"});
+    obj.data['Action & Adventure'] = [];
+    obj.save(function(err, data){
+      if(err) return res.json({ error: "ClearTony save Failed" });
+      console.log('clearTony success');
+    });
+  });
+}
+
+var putImage = exports.putImage = function(req, res){
+  console.log('getImg');
+  var options = {
+    host: 'https://identity.api.rackspacecloud.com/v1.0',
+    port: 80,
+    path: '/1.0',
+    method: 'GET',
+    headers: {
+      'X-Auth-User': 'happyspace',
+      'X-Auth-Key': '1b5a100b899c44633dbda1aa93ea6237'
+    }
+  };
+  var R = http.request(options, function(response) {
+  
+  });
+  R.end();
+}
+
+var fetchImg = exports.fetchImg = function(req, res){
+  app.riak.bucket('images').objects.get('testImg', function(err, obj){
+    var base64data = new Buffer(obj.data).toString('base64');
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Length', base64data.length);
+    res.end(base64data);
+    console.log(base64data);
+    return res.send(base64data);
+      
+      //return res.json({ img: base64data });
+    //console.log(err);
+    //console.log(obj);
+  });
+}
+
 
 /* create an individual user, split into 3 parts: user, user-groups, user-activity
  * user@gmail.com contains all basic user data
@@ -1052,7 +1112,7 @@ var generateId = exports.generateId = function(callback){
   console.log('nodeflake request');
   //do GET request to nodeflake
   var options = {
-    host: 'dev.quyay.com',
+    host: config.nodeflake_host,
     port: 1337,
     path: '/',
     method: 'GET',
