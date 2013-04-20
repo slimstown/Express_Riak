@@ -26,11 +26,18 @@ rackit.init({
 
 var app = express();
 
+var production = false;
+
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
-//var riak = exports.riak = require('nodiak').getClient('http', 'riak3.quyay.com', 8098);
-var riak = exports.riak = require('nodiak').getClient('http', config.db_host, 8100);
-
+if(production){
+  var riak = exports.riak = require('nodiak').getClient('http', 'riak3.quyay.com', 8098);
+  console.log('DB Interface on Production Data');
+}
+else{
+  var riak = exports.riak = require('nodiak').getClient('http', config.db_host, 8100);
+  console.log('DB Interface on Dev Data');
+}
 
 //IT ALL STARTS HERE
 riak.ping(function(err, response){

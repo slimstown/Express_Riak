@@ -1,0 +1,4 @@
+# exclude all log files #
+
+*.log
+*.out
