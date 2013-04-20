@@ -14,7 +14,7 @@ exports.listObjects = function(bucket, callback){
           if(callback) callback();
         }
         else if(err){
-          console.log('mapreduce error');
+          console.log('mapreduce error1');
         }
     }
   );
@@ -32,6 +32,7 @@ exports.listKeys = function(bucket, callback){
           callback(results);
         }
         else if(err){
+          console.log('mapreduce error2');
           console.log(err);
         }
     }
@@ -57,6 +58,7 @@ exports.deleteObjects = function(bucket, callback){
           if(callback) callback();
         }
         if(err){
+          console.log('mapreduce error');
           console.log(err);
         }
     }

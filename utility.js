@@ -1109,7 +1109,6 @@ var deactivateUser = exports.deactivateUser = function(userId){
 var prev = '';
 var generateId = exports.generateId = function(callback){
   var ID_obj;
-  console.log('nodeflake request');
   //do GET request to nodeflake
   var options = {
     host: config.nodeflake_host,

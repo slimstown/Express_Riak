@@ -1,2 +1,2 @@
-exports.nodeflake_host = '10.1.10.23';
-exports.db_host = '10.1.10.23';
+exports.nodeflake_host = '10.1.10.38';
+exports.db_host = '10.1.10.38';

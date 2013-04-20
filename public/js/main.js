@@ -5,23 +5,6 @@ $(document).ready(function(e){
   
   var percent = 0;
   
-  /*$('#email_btn').click(function(e){
-    console.log('Hello button');
-    var email = 'footindoorsolutions@gmail.com';
-    var pass = '776736869468729300';
-    $.ajax({
-      type: 'post',
-      url: '/resendEmail',
-      data: 'email=' + email + '&pass=' + pass,
-      success: function(data){
-        console.log('emailed' + data.email);
-      },
-      error: function(data){
-        console.log('error');
-      }
-    });
-  });*/
-  
   $('#uploadForm').submit(function(){
     $(this).ajaxSubmit({
       beforeSubmit: function(formData, jqForm, options){
