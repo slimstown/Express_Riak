@@ -1124,6 +1124,8 @@ var generateId = exports.generateId = function(callback){
     });
     response.on('end', function() {
       ID_obj = JSON.parse(ID);
+      //console.log(ID_obj.id);
+      //console.log(typeof ID_obj.id);
       //if we get duplicate, retry
       if(ID_obj.id === prev){
         console.log('dupId: ' +ID_obj.id);
@@ -1140,9 +1142,12 @@ var generateId = exports.generateId = function(callback){
   });
   R.end();
   function next(){
-    //invert values allowing us to sort from new (low #) to old (high #)
-    var val = "999999999999999999" - ID_obj.id;
-    callback(val);
+    //invert values allowing us to sort from new (low #) to old (high #) via Riak search
+    //this is madness.....THIS.....IS......JAVASCRIPT!
+    var str1 = ('999999999' - ID_obj.id.substr(0,9)).toString();
+    var str2 = ('999999999' - ID_obj.id.substr(9,9)).toString();
+    var str3 = str1.concat(str2);
+    callback(str3);
   }
 }
 

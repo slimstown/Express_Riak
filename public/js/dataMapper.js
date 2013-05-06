@@ -38,11 +38,14 @@ getBucket = function(bucketName){
           //console.log(val);
           if(bucketName === 'users'){
             text += '<tr>';
-            //TODO FINISH testing / filling this in
+            //TODO: FINISH testing / filling this in
             if(key) text += '<td><a class="id" href="#">'+ key +'</a></td>'; else text += '<td></td>';
-            if(val.username) text += '<td>'+ val.username +'</td>'; else text += '<td></td>';
+            //TODO: Fix this bullshit
+            if(val.username) text += '<td>'+ val.username +'</td>'; 
+            else if(val.userName) text += '<td>'+ val.userName +'</td>';
+            else text += '<td></td>';
             if(val.fbConnect) text += '<td>'+ val.fbConnect +'</td>'; else text += '<td></td>';
-            if(val.favCat.length > 0){
+            if(val.favCat && val.favCat.length > 0){
               text += '<td><select>';
               for(c in val.favCat){
                 text += '<option>' + val.favCat[c] + '</option>';
@@ -89,8 +92,12 @@ getBucket = function(bucketName){
           else if(bucketName === 'userReference'){
             text += '<tr>';
             if(key) text += '<td>' + key + '</td>'; else text += '<td></td>';
-            if(val.username) text += '<td>' + val.username + '</td>'; else text += '<td></td>';
-            if(val.imgUrl) text += '<td><img src="' + val.imgUrl + '" height="22" width="22" /></td>'; else text += '<td></td>';
+            if(val.username) text += '<td>' + val.username + '</td>';
+            else if(val.userName) text += '<td>' + val.userName + '</td>';
+            else text += '<td></td>';
+            if(val.imgUrl) text += '<td><img src="' + val.imgUrl + '" height="22" width="22" /></td>';
+            else if(val.profileImg) text += '<td><img src="' + val.imgUrl + '" height="22" width="22" /></td>';
+            else text += '<td></td>';
             text += '</tr>';
           }
           else if(bucketName === 'pendingUsers'){
@@ -108,7 +115,6 @@ getBucket = function(bucketName){
             if(val.posterId) text += '<td>'+ val.posterId +'</td>'; else text += '<td></td>';
             if(val.category) text += '<td>'+ val.category +'</td>'; else text += '<td></td>';
             if(val.description) text += '<td>'+ val.description +'</td>'; else text += '<td></td>';
-            console.log(val.likedBy);
             if(val.likedBy && val.likedBy.length > 0){
               text +='<td><select>';
               for(c in val.likedBy.length){
@@ -146,10 +152,10 @@ getBucket = function(bucketName){
                                     '<th>Followers</th><th>Following</th><th>GetData</th><th>Actions</th><tr>');
           break;
         case 'userReference':
-          $('#object_table').append('<tr><th>Key</th><th>Username</th><th>imgUrl</th><tr>');
+          $('#object_table').append('<tr><th>key</th><th>userName</th><th>profileImg</th><tr>');
           break;
         case 'pendingUsers':
-          $('#object_table').append('<tr><th>Key</th><th>email</th><th>userName</th><th>company</th><th>options</th><tr>');
+          $('#object_table').append('<tr><th>key</th><th>email</th><th>userName</th><th>company</th><th>options</th><tr>');
           break;
         case 'gamepins':
           $('#object_table').append('<tr><th>ID</th><th>Poster ID</th><th>Category</th><th>Description</th><th>likedBy</th><th>Comments</th><tr>');

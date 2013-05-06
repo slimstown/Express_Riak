@@ -2,13 +2,9 @@
 <html>
 <head>
   <script src="/js/jquery-1.8.1.min.js"></script>
-  <script src="/js/api.js"></script>
+  <script src="/js/dataMapper.js"></script>
   <script src="/js/main.js"></script>
-  <script src="/js/jquery.form.js"></script>
-  <script src="/js/bootstrap-fileupload.js"></script>
   <link href="/css/main.css" rel="stylesheet">
-  <link href="/css/bootstrap-fileupload.css" rel="stylesheet">
-  <link href="/css/bootstrap.css" rel="stylesheet">
   <style>
     .thumb {
       height: 75px;
@@ -18,67 +14,6 @@
   </style>
 </head>
 <body>
-  <div id="img_container">
-  </div>
-  <button id="toggle_options" >Show Options</button>
-  <br />
-  <div id="left">
-    <!--<p> Search GamePin via category </p>
-    <button class="save_img">Save Image</button>
-    <button class="fetch_img">Get Image</button>
-    <form id="query_form">
-      <select name="category">
-        <option value="All">All</option>
-        <option value="Casino">Casino</option>
-        <option value="Casual">Casual</option>
-        <option value="Shooter">Shooter</option>
-        <option value="Action">Action</option>
-        <option value="Simulation">Simulation</option>
-        <option value="Racing">Racing</option>
-        <option value="Puzzle">Puzzle</option>
-        <option value="Fighting">Fighting</option>
-        <option value="Social">Social</option>
-        <option value="Space">Space</option>
-        <option value="Horror">Horror</option>
-        <option value="Strategy">Strategy</option>
-      </select>
-      <select name="bucket">
-        <option value="gamepins">gamepins</option>
-        <option value="storepins">storepins</option>
-      </select>
-      <br />
-      <br />
-      <input type="submit" value="query">
-      <br />
-    </form>
-    <form id="search_form">
-      <p> Search for matching words: </p>
-      <input class="search_input" type="text" placeholder="search term"></input>
-      <br />
-      <br />
-      <input type="submit" value="query">
-      <br />
-    </form>
-    <br />
-    <hr>
-    <br />-->
-    
-    <!-- Functionality************************************************* -->
-    <button id="email_btn" type="button">Send Email</button>
-    <p>Post Image</p>
-    <form id="uploadForm" action="/postImage" method="post" enctype="multipart/form-data">
-      <!--<input id="fileInput" type="file" name="image"></input>-->
-      <div class="fileupload fileupload-new" data-provides="fileupload">
-        <div class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
-        <div>
-        <span class="btn btn-file"><span class="fileupload-new">Select image</span><span class="fileupload-exists">Change</span><input id="fileInput" name="image" type="file" /></span>
-        <a href="#" class="btn fileupload-exists" data-dismiss="fileupload">Remove</a>
-        </div>
-      </div>
-      <input id="fileSubmit" type="submit">
-      <a id="cdnUrl" >View Image on Rackspace</a>
-    </form>
-  </div>
   <div id="right_1">
     <div class="buckets">Buckets:
       <span>

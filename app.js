@@ -5,28 +5,12 @@ var mr = require('./mapreduce');
 var util = require('./utility');
 var bcrypt = require('bcrypt-nodejs');
 var request = require('request');
-var rackit = require('rackit');
 var config = require('./config');
 var mandrill = exports.mandrill = require('node-mandrill')('rRK6Fs7T1NKpMbJZKxpJfA');
 
-//create rackspace image, define name of container we will push images to
-rackit.init({
-  user: 'happyspace',
-  key: '1b5a100b899c44633dbda1aa93ea6237',
-  prefix: 'test',
-  tempURLKey : null, // A secret for generating temporary URLs
-  useSNET : false,
-  useCDN : true,
-  useSSL : true, // Specifies whether to use SSL (https) for CDN links
-  verbose : false, // If set to true, log messages will be generated
-  logger : console.log // Function to receive log messages
-}, function(err){
-  if(err) console.log('error:' + err);
-});
+var app = exports.self = express();
 
-var app = express();
-
-var production = false;
+var production = true;
 
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);
@@ -39,8 +23,10 @@ else{
   console.log('DB Interface on Dev Data');
 }
 
+var api = require('./routes/api');
+
 //IT ALL STARTS HERE
-riak.ping(function(err, response){
+/*riak.ping(function(err, response){
   if(err){
     console.log(err);
     return;
@@ -49,7 +35,7 @@ riak.ping(function(err, response){
   util.generateId(function(id){
     if(id) console.log('Connection to nodeflake: OK');
   });
-});
+});*/
 
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -68,307 +54,8 @@ app.configure(function(){
 app.get('/', function(req, res){
   res.render('main');
 });
-
-app.get('/auth', function(req, res){
-  var options = {
-    host: 'identity.api.rackspacecloud.com',
-    port: '80',
-    path: '/v1.0',
-    method: 'GET',
-    headers: {
-      'X-Auth-User': 'happyspace',
-      'X-Auth-Key': '1b5a100b899c44633dbda1aa93ea6237'
-    }
-  };
-  var R = http.request(options, function(response) {
-    var token = null;
-    response.on('data', function(data) {
-      token += data;
-    });
-    response.on('end', function(thing) {
-    });
-  });
-  R.end();
-});
-
-/* AJAX API */
-app.get('/getBuckets', function(req, res){
-  var result = {arr: []};
-  db.buckets(function(err, buckets, meta){
-    for(bucket in buckets){
-      if(buckets.hasOwnProperty(bucket)){
-        result.arr.push(buckets[bucket]);
-      }
-    }
-    return res.json(result);
-  });
-});
-//get all objects in bucket, resolving conflicts along the way
-app.post('/getBucket', function(req, res){
-  var objList = [];
-  var keys = [];
-  mr.listKeys(req.body.bucket, function(results){
-    for(k in results.data){
-      if(results.data[k].indexOf('-') === -1){
-        keys.push(results.data[k]);
-      }
-    }
-    if(keys.length > 0) next();
-    else {
-      return res.json(objList);
-    }
-  });
-  //READ AND RESOLVE!!!
-  function next(){
-    conflicted = [];
-    var resolve_func;
-    if(req.body.bucket === 'gamepins') resolve_func = util.pin_resolve;
-    else if(req.body.bucket === 'users') resolve_func = util.user_resolve;
-    riak.bucket(req.body.bucket).objects.get(keys, resolve_func, function(err, objs){
-      if(err){
-        console.log('Error:');
-        console.log(err);
-        return res.json({error: 'object is missing or other error. Bad news :( '});
-      }
-      //if nodiak gives us a single object, convert that into an array with 1 element
-      if(objs && Object.prototype.toString.call( objs ) === '[object Object]')
-        objs = [objs];
-      //Add conflicts to queue to be resolved
-      for(var o in objs){
-        util.clearChanges(objs[o]);
-        if(objs[o].siblings)
-          //conflicted.push(objs[o]);
-          conflicted.push({ key: objs[o].key, val: objs[o].data})
-        else
-          //objList.push(objs[o]);
-          objList.push({ key: objs[o].key, val: objs[o].data})
-      }
-      var len = conflicted.length;
-      //if no conflicts, return objList
-      if(len <= 0){
-        return res.json(objList);
-      }
-      //if conflicts, resolve them
-      else{
-        var clock = 0;
-        for(var c = 0; c < conflicted.length; c++){
-          (function(d){
-            conflicted[d].save(function(err, saved){
-              console.log(err);
-              console.log('conflict resolved');
-              util.clearChanges(saved);
-              //clear siblings so we can convert to JSON
-              saved.siblings = null;
-              objList.push({key: saved.key, val: saved.data});
-              if(clock === conflicted.length-1) next2();
-              clock++;
-            });
-          })(c);
-        }
-      }
-    });
-    function next2(){
-      console.log('conflicts solved: got all '+req.body.bucket+' objects');
-      return res.json(objList);
-    }
-  }
-});
-
-app.post('/getGroups', function(req, res){
-  riak.bucket('users').objects.get(req.body.key+'-groups', function(err, obj){
-    if(err && err.status_code === 404){
-      console.log(err);
-      console.log('not found, creating groups entry now');
-      var group_obj = riak.bucket('users').objects.new(err.data, {"Action & Adventure":[]});
-      group_obj.save(function(err, saved){
-        if(err) return({ error: "Could not create group entry" });
-        //else return res.json({ groups: saved.data })
-      });
-      //return res.json({error: "Error: user does not have groups list"});
-    }
-    console.log(obj);
-    return res.json({groups: obj.data});
-  });
-});
-
-app.post('/getActivity', function(req, res){
-  console.log(req.body);
-  riak.bucket('users').objects.get(req.body.key+'-activity', function(err, obj){
-    if(err && err.status_code === 404){
-      console.log('not found');
-      return res.json({error: "Error: user does not have an activity list"});
-    }
-    return res.json({activity: obj.data});
-  });
-});
-
-app.post('/getIndex', function(req, res){
-  riak.bucket('users').objects.get(req.body.key, function(err, obj){
-    return res.json({ username: obj.getIndex('username') });
-  });
-});
-
-app.post('/deletePending', function(req, res){
-  riak.bucket('pendingUsers').object.get(req.body.key, function(err, obj){
-    if(err) return res.json({ err: "not found"});
-    obj.delete(function(err, deleted){
-      if(err) return res.json({ error: "Delete Pending User failed" });
-      console.log("Pending User " + req.body.key + " Deleted");
-      return res.json({deleted: req.body.key});
-    });
-  });
-});
-
-//activate a pendingUser, making him a real Quyay user
-//generated tmp password, create user, send email, delete pending user
-//pending user's params are passed in
-app.post('/activatePending', function(req, res){
-  var new_user;
-  var tmp_pass;
-  var user_key = req.body.email;
-  var user_data = {
-                email: req.body.email,
-                passHash: null,
-                username: req.body.name,
-                fbConnect: false,
-                favCat: [],
-                profileImg: null,
-                gender: null,
-                bio:null,
-                dateJoined: util.getDate(),
-                posts:[],
-                likes:[],
-                followers:[],
-                following:[],
-                changes:{
-                  posts: {add:[], remove:[]},
-                  likes: {add:[], remove:[]},
-                  followers: {add:[], remove:[]},
-                  following: {add:[], remove:[]},
-                }
-    };
-  
-  //generate tmp password from nodeflake
-  util.generateId(function(id){
-    temp_pass = id;
-    user_data.passHash = bcrypt.hashSync(id);
-    next();
-  });
-  //create user (4 step process)
-  //create user object
-  function next(){
-    new_user = riak.bucket('users').objects.new(user_key, user_data);
-    new_user.addToIndex('username', user_data.username);
-    new_user.save(function(err, saved){
-      if(err) return res.json({ error: "create pending error: " + err });
-      next2();
-    });
-  }
-  //create user-groups
-  function next2(){
-    var group_data = {};
-    var group_key = user_key + '-groups';
-    new_group = riak.bucket('users').objects.new(group_key, group_data);
-    new_group.save(function(err, saved){
-      if(err) return res.json({ error: "create groups error: " + err });
-      next3();
-    });
-  }
-  //create user-activity
-  function next3(){
-    var activity_data = {evtIds:[]};
-    var activity_key = user_key + '-activity';
-    var new_activity = riak.bucket('users').objects.new(activity_key, activity_data);
-    new_activity.save(function(err, saved){
-      if(err) return res.json({ error: "create activity error: " + err });
-      next4();
-    });
-  }
-  //create user quick-reference
-  function next4(){
-    var usr_ref = riak.bucket('userReference').objects.new(user_key, {username: user_data.username,
-                                                                      imgUrl: null});
-    usr_ref.save(function(err, saved){
-      if(err) return res.json({ error: "create activity error: " + err });
-      next5();
-    });
-  }
-  //send email
-  function next5(){
-    mandrill('messages/send', {
-      message: {
-        to: [{email: user_key}],
-        from_email: 'info@quyay.com',
-        subject: "Quyay Alpha Access",
-        text: "Congratulations, You have been granted access to Quyay Alpha! \n\n" +
-        "You can sign in using this email and the temporary password shown below:\n\n" +
-        "Temporary Password: " + temp_pass + " \n\n" +
-        "Go to http://www.quyay.com/ and scroll to the bottom of the page to find the 'Sign In' area. \n\n" +
-        "Once you have signed in, you can change your password.  " +
-        "Click the profile tab in the top right, and select 'Settings'.\n" +
-        "From here, type your new password into the 'Change Password' and 'Confirm Changes' input areas, and click 'Save Settings'.\n\n" +
-        "Hope to see you soon!\n\n" +
-        "-Team Quyay"
-      }
-    }, function(err, response){
-      if(err){
-        console.log(JSON.stringify(err));
-        return res.json({error: err});
-      }
-      else{
-        console.log(response);
-        next6();
-      }
-    });
-  }
-  //delete pending user
-  function next6(){
-    //delete pending user
-    riak.bucket('pendingUsers').object.get(user_key, function(err, obj){
-      if(err) return res.json({error: "delete pendingUser Error: " + err});
-      obj.delete(function(err, deleted){
-        return res.json({ success: true });
-      });
-    });
-  }
-});
-
-app.post('/deleteUser', function(req, res){
-  riak.bucket('users').object.get(req.body.key, function(err, obj){
-    if(err) return res.json({ err: "not found"});
-    obj.delete(function(err, deleted){
-      if(err) return res.json({ error: "Delete User failed" });
-      console.log('deleted ' + deleted.key);
-      next();
-    });
-  });
-  function next(){
-    riak.bucket('userReference').object.get(req.body.key, function(err, obj){
-      if(err) return res.json({ err: "not found"});
-      obj.delete(function(err, deleted){
-        if(err) return res.json({ error: "Delete User failed" });
-        console.log('deleted ' + deleted.key);
-        return res.json({deleted: req.body.key});
-      });
-    });
-  }
-});
-
-//query via text
-app.post('/textSearch', function(req, res){
-  var s = 10;
-  var objArray = [];
-  var query = {
-    q: 'description:' + '"' + req.body.text + '"',
-    start: s,
-    rows: 10,
-    presort: 'key'
-  }
-  
-  riak.bucket(req.body.bucket).search.solr(query, function(err, response){
-    return res.json({ objects: response.response.docs });
-  });
-});
+//contains api functions
+api();
 
 app.listen(3003, function(){
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
