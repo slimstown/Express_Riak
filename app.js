@@ -10,7 +10,7 @@ var mandrill = exports.mandrill = require('node-mandrill')('rRK6Fs7T1NKpMbJZKxpJ
 
 var app = exports.self = express();
 
-var production = true;
+var production = false;
 
 //setup Redis and Riak
 var RedisStore = require('connect-redis')(express);

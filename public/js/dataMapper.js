@@ -95,8 +95,7 @@ getBucket = function(bucketName){
             if(val.username) text += '<td>' + val.username + '</td>';
             else if(val.userName) text += '<td>' + val.userName + '</td>';
             else text += '<td></td>';
-            if(val.imgUrl) text += '<td><img src="' + val.imgUrl + '" height="22" width="22" /></td>';
-            else if(val.profileImg) text += '<td><img src="' + val.imgUrl + '" height="22" width="22" /></td>';
+            if(val.profileImg) text += '<td><img src="' + val.profileImg + '" height="22" width="22" /></td>';
             else text += '<td></td>';
             text += '</tr>';
           }

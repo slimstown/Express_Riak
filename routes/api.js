@@ -37,6 +37,30 @@ function reindexUser(userId, callback){
   });
 }
 
+// Update userRef to have correct property names.  Trash the old ones. {username, imgUrl} => {userName, profileImg}
+// callback(error)
+function reindexUserRef(userId, callback){
+  riak.bucket('userReference').objects.get(userId, function(err, usr_ref){
+    if(err) callback(new Error(err.message));
+    //clean up garbage null values
+    if(usr_ref.data.imgUrl === null) delete usr_ref.data.imgUrl;
+    if(usr_ref.data.username === null) delete usr_ref.data.username;
+    if(usr_ref.data.username){
+      usr_ref.data.userName = usr_ref.data.userName || usr_ref.data.username;
+      delete usr_ref.data.username;
+    }
+    if(usr_ref.data.imgUrl){
+      usr_ref.data.profileImg = usr_ref.data.profileImg || usr_ref.data.imgUrl;
+      delete usr_ref.data.imgUrl;
+    }
+    usr_ref.save(function(err, saved){
+      if(err) return callback(new Error('reindexUserRef error: '+ err.message));
+      console.log('userReference '+saved.key+' reindexed');
+      return callback(null);
+    });
+  });
+}
+
 var convertUserFlakes = function(){
   console.log('convertFlakes');
   var keys = [];
@@ -277,6 +301,21 @@ module.exports = function(){
     //console.log(typeof id);
   });
   
+  app.get('/indexUserRef', function(req, res){
+    var keys;
+    mr.listKeys('userReference', function(results){
+      keys = results.data;
+      if(keys.length > 0) next();
+      else return res.json({ error: 'no keys specified' });
+    });
+    function next(){
+      async.eachSeries(keys, reindexUserRef, function(err){
+        if(err) return res.json({ error: err.message });
+        else return res.json({ success: 'all userReferences reindexed' });
+      });
+    }
+  });
+  
   app.get('/indexUsers', function(req, res){
     var objList = [];
     var keys = [];
@@ -318,17 +357,6 @@ module.exports = function(){
         else return res.json({ success: 'All gamepins reindexed' });
       });
     }
-  });
-  app.post('/indexComments', function(req, res){
-    mr.listKeys('users', function(results){
-      for(k in results.data){
-        if(results.data[k].indexOf('-') === -1){
-          keys.push(results.data[k]);
-        }
-      }
-      if(keys.length > 0) next();
-      else return res.json(objList);
-    });
   });
   
   //get all objects in bucket, resolving conflicts along the way
