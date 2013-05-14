@@ -4,6 +4,9 @@ var bcrypt = require('bcrypt-nodejs');
 var async = require('async');
 var app = require('../app');
 var riak = require('../app').riak;
+var mandrill = require('../app').mandrill;
+
+console.log(mandrill);
 
 var pinSchema = require('../schema/gamepin');
 var userSchema = require('../schema/user');
@@ -508,7 +511,7 @@ module.exports = function(){
     //create user object
     function next(){
       new_user = riak.bucket('users').objects.new(user_key, user_data);
-      new_user.addToIndex('username', user_data.username);
+      new_user.addToIndex('username', user_data.userName);
       new_user.save(function(err, saved){
         if(err) return res.json({ error: "create pending error: " + err });
         next2();
@@ -536,7 +539,7 @@ module.exports = function(){
     }
     //create user quick-reference
     function next4(){
-      var usr_ref = riak.bucket('userReference').objects.new(user_key, {userName: user_data.username,
+      var usr_ref = riak.bucket('userReference').objects.new(user_key, {userName: user_data.userName,
                                                                         profileImg: null});
       usr_ref.save(function(err, saved){
         if(err) return res.json({ error: "create activity error: " + err });
