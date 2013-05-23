@@ -15,11 +15,12 @@ var userSchema = require('../schema/user');
 // callback(err, user)
 function reindexUser(userId, callback){
   //get RObject
+  //console.log('reindexUser');
   console.log('fetching '+userId);
   riak.bucket('users').objects.get(userId, function(err, ROuser){
     if(err) return callback(new Error(err.message), null);
     //if out of date, reindex (skip validation checks)
-    if(!ROuser.data.version || ROuser.data.version !== userSchema.userInstance.version){
+    if(!ROuser.data.version || (ROuser.data.version !== userSchema.userInstance.version)){
       ROuser.data['version'] = userSchema.userInstance.version;
       if(ROuser.data['username']) ROuser.data['userName'] = ROuser.data['username'];
       var new_usr = new userSchema.user(ROuser.data);
@@ -259,7 +260,7 @@ function reindexGamepin(pinId, callback){
       return callback(new Error(err.message), null);
     }
     //if out of date, reindex (skip validation checks)
-    if(!ROpin.data.version || ROpin.data.version !== pinSchema.gamepinInstance.version){
+    if(!ROpin.data.version || (ROpin.data.version !== pinSchema.gamepinInstance.version)){
       ROpin.data['version'] = pinSchema.gamepinInstance.version;
       var new_pin = new pinSchema.gamepin(ROpin.data);
       ROpin.data = new_pin;
@@ -291,7 +292,6 @@ var get_and_delete = exports.get_and_delete = function(obj, callback){
   });
 }
 
-
 module.exports = function(){
   
   app = app.self;
@@ -306,6 +306,7 @@ module.exports = function(){
   
   app.get('/indexUserRef', function(req, res){
     var keys;
+    console.log('indexUserRef FUCK');
     mr.listKeys('userReference', function(results){
       keys = results.data;
       if(keys.length > 0) next();
@@ -366,6 +367,7 @@ module.exports = function(){
   app.post('/getBucket', function(req, res){
     var objList = [];
     var keys = [];
+    //get all keys in bucket
     mr.listKeys(req.body.bucket, function(results){
       for(k in results.data){
         if(results.data[k].indexOf('-') === -1){
@@ -377,58 +379,22 @@ module.exports = function(){
         return res.json(objList);
       }
     });
-    //READ AND RESOLVE!!
     function next(){
-      conflicted = [];
-      var resolve_func;
-      if(req.body.bucket === 'gamepins') resolve_func = util.pin_resolve;
-      else if(req.body.bucket === 'users') resolve_func = util.user_resolve;
-      riak.bucket(req.body.bucket).objects.get(keys, util.last_write_wins, function(err, objs){
+      //get objects
+      riak.bucket(req.body.bucket).objects.get(keys, function(err, objs){
         if(err){
-          console.log('Error:');
-          console.log(err);
-          return res.json({error: 'object is missing or other error. Bad news :( '});
+          console.log('Error:' + err.message);
+          return res.json({ error: err.message });
         }
         //if nodiak gives us a single object, convert that into an array with 1 element
         if(objs && Object.prototype.toString.call( objs ) === '[object Object]')
           objs = [objs];
         //Add conflicts to queue to be resolved
         for(var o in objs){
-          if(objs[o].siblings)
-            //conflicted.push(objs[o]);
-            conflicted.push({ key: objs[o].key, val: objs[o].data})
-          else
-            //objList.push(objs[o]);
-            objList.push({ key: objs[o].key, val: objs[o].data})
+          objList.push({ key: objs[o].key, val: objs[o].data})
         }
-        var len = conflicted.length;
-        //if no conflicts, return objList
-        if(len <= 0){
-          return res.json(objList);
-        }
-        //if conflicts, resolve them
-        else{
-          var clock = 0;
-          for(var c = 0; c < conflicted.length; c++){
-            (function(d){
-              conflicted[d].save(function(err, saved){
-                console.log(err);
-                console.log('conflict resolved');
-                util.clearChanges(saved);
-                //clear siblings so we can convert to JSON
-                saved.siblings = null;
-                objList.push({key: saved.key, val: saved.data});
-                if(clock === conflicted.length-1) next2();
-                clock++;
-              });
-            })(c);
-          }
-        }
-      });
-      function next2(){
-        console.log('conflicts solved: got all '+req.body.bucket+' objects');
         return res.json(objList);
-      }
+      });
     }
   });
   
