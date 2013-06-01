@@ -31,9 +31,14 @@ getBucket = function(bucketName){
         return;
       }
       if(data){
+        if(bucketName === 'feedback'){
+          alert(JSON.stringify(data, undefined, 2));
+          return;
+        }
         for(obj in data){
           var key = data[obj].key;
           var val = data[obj].val;
+
           if(bucketName === 'users'){
             text += '<tr>';
             if(val.version) text+= '<td>'+ val.version +'</td>'; else text += '<td></td>';
