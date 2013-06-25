@@ -7,7 +7,7 @@
   <script type="text/javascript">
     $(document).ready(function(){
       $('#execute').click(function(ev){
-        $.ajax({ type: 'get', url: '/deletePendingUsers',
+        $.ajax({ type: 'get', url: '/queryGraveyard',
             success: function(data){
               console.log(data);
             },

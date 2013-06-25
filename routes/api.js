@@ -296,6 +296,17 @@ module.exports = function(){
   
   app = app.self;
   
+  //take a look and see what user emails are in the graveyard
+  app.get('/queryGraveyard', function(req, res){
+    console.log('querygraveyard');
+    var keys = [];
+    mr.listKeys('graveyard', function(results){
+      for(k in results.data){
+        console.log(results.data[k]);
+      }
+    });
+  });
+  
   app.get('/deletePendingUsers', function(req, res){
     var keys = [];
     //get all pendingUsers
@@ -305,7 +316,6 @@ module.exports = function(){
         keys.push(results.data[k]);
       }
       next();
-      return res.json('success');
     });
     //fetch and delete them one by one, in series
     function next(){
