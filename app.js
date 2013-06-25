@@ -19,6 +19,7 @@ if(production){
   console.log('DB Interface on Production Data');
 }
 else{
+  console.log(config.db_host);
   var riak = exports.riak = require('nodiak').getClient('http', config.db_host, 8100);
   console.log('DB Interface on Dev Data');
 }

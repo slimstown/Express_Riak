@@ -296,6 +296,36 @@ module.exports = function(){
   
   app = app.self;
   
+  app.get('/deletePendingUsers', function(req, res){
+    var keys = [];
+    //get all pendingUsers
+    mr.listKeys('pendingUsers', function(results){
+      for(k in results.data){
+        console.log(results.data[k]);
+        keys.push(results.data[k]);
+      }
+      next();
+      return res.json('success');
+    });
+    //fetch and delete them one by one, in series
+    function next(){
+      async.eachSeries(keys, function(key, callback){
+        riak.bucket('pendingUsers').objects.get(key, function(err, usr){
+          if(err) return callback(err);
+          usr.delete(function(_err, deleted){
+            if(_err) return callback(_err);
+            console.log('pendingUser '+deleted.key+' deleted!');
+            return callback(null);
+          });
+        });
+      },
+      function(err){
+        if(err) return res.json({ error: 'deletePendingUsers error '+err.message });
+        return res.json({ success: 'all pendingUsers cleared!' });
+      });
+    }
+  });
+  
   //convertUserFlakes();
   //convertPinFlakes();
   //convertCommentFlakes();
